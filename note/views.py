@@ -9,7 +9,9 @@ from django_filters import rest_framework as filters
 from rest_framework import viewsets, versioning, status
 from rest_framework.response import Response
 from utils.AESHelper import make_enc_value, get_dec_value
+from utils.dicHelper import get_dic_value
 from utils.formatHelper import *
+from utils.logHelper import insert_audit_log
 from utils.regexHelper import *
 
 import random
@@ -113,6 +115,9 @@ class BankAccountAPI(viewsets.ModelViewSet):
     # 정렬 적용 필드
     ordering_fields = ['id', 'bank', 'account', 'account_holder', 'description']
 
+    # 감사 로그 > 카테고리
+    category = '계좌번호 관리'
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -131,22 +136,131 @@ class BankAccountAPI(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        if request.data.get('account'):
-            request.data['account'] = make_enc_value(request.data.get('account'))
+        # 감사 로그 > 내용
+        actions = []
 
-        if request.data.get('description'):
-            request.data['description'] = make_enc_value(request.data.get('description'))
+        # 감사 로그 > 결과
+        result = False
 
-        return super().create(request, *args, **kwargs)
+        try:
+            bank = get_dic_value(request.data, 'bank')
+            account_holder = get_dic_value(request.data, 'account_holder')
+
+            if request.data.get('account'):
+                request.data['account'] = make_enc_value(request.data.get('account'))
+
+            if request.data.get('description'):
+                request.data['description'] = make_enc_value(request.data.get('description'))
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            # 추가 성공 시 감사 로그 > 내용에 아이디 항목 추가
+            actions.append(f'[아이디] : {to_str(serializer.data.get("id"))}')
+
+            result = True
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Exception as e:
+            logger.warning(f'[BankAccountAPI - create] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[은행] : {bank}')
+            actions.append(f'[예금주] : {account_holder}')
+            audit_log = f"""추가 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
     def update(self, request, *args, **kwargs):
-        if request.data.get('value'):
-            request.data['value'] = make_enc_value(request.data.get('value'))
+        # 감사 로그 > 내용
+        actions = []
 
-        if request.data.get('description'):
-            request.data['description'] = make_enc_value(request.data.get('description'))
+        # 감사 로그 > 결과
+        result = False
 
-        return super().update(request, *args, **kwargs)
+        try:
+            if request.data.get('account'):
+                request.data['account'] = make_enc_value(request.data.get('account'))
+
+            if request.data.get('description'):
+                request.data['description'] = make_enc_value(request.data.get('description'))
+
+            bank = get_dic_value(request.data, 'bank')
+            account_holder = get_dic_value(request.data, 'account_holder')
+
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+
+            actions.append(f'[아이디] {to_str(instance.id)}')
+
+            if instance.bank != bank:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[은행] {instance.bank} → {bank}')
+
+            if instance.account != get_dic_value(request.data, 'account'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[계좌번호 변경]')
+
+            if instance.account_holder != account_holder:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[예금주] {instance.account_holder} → {account_holder}')
+
+            if instance.description != get_dic_value(request.data, 'description'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[설명 변경]')
+
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+
+            result = True
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.warning(f'[BankAccountAPI - update] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            audit_log = f"""편집 ( {', '.join(actions)} )"""
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def destroy(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            instance = self.get_object()
+            id = to_str(instance.id)
+            bank = to_str(instance.bank)
+            account_holder = to_str(instance.account_holder)
+
+            self.perform_destroy(instance)
+
+            result = True
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.warning(f'[BankAccountAPI - destroy] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[아이디] : {id}')
+            actions.append(f'[은행] : {bank}')
+            actions.append(f'[예금주] : {account_holder}')
+            audit_log = f"""삭제 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
 
 class GuestBookFilter(filters.FilterSet):
@@ -176,6 +290,170 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ['id', 'name', 'amount', 'area', 'attend', 'description']
+
+    # 감사 로그 > 카테고리
+    category = '결혼식 방명록'
+
+    def create(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            name = get_dic_value(request.data, 'name')
+            amount = to_int(get_dic_value(request.data, 'amount', None))
+            date = get_dic_value(request.data, 'date', None)
+            area = get_dic_value(request.data, 'area')
+            attend = get_dic_value(request.data, 'attend', '-')
+            description = get_dic_value(request.data, 'description')
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            # 추가 성공 시 감사 로그 > 내용에 아이디 항목 추가
+            actions.append(f'[아이디] : {to_str(serializer.data.get("id"))}')
+
+            result = True
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Exception as e:
+            logger.warning(f'[GuestBookAPI - create] {to_str(e)}')
+
+        finally:
+            date_str = date if date is not None else ''
+            amount_str = to_str(amount) if amount is not None else ''
+
+            # 감사 로그 기록
+            actions.append(f'[이름] : {name}')
+            actions.append(f'[금액] : {amount_str}')
+            actions.append(f'[일자] : {date_str}')
+            actions.append(f'[장소] : {area}')
+            actions.append(f'[참석 여부] : {self.get_attend_str(attend)}')
+            actions.append(f'[설명] : {description}')
+            audit_log = f"""추가 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def update(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            name = get_dic_value(request.data, 'name')
+            amount = to_int(get_dic_value(request.data, 'amount', None))
+            date = get_dic_value(request.data, 'date', None)
+            area = get_dic_value(request.data, 'area')
+            attend = get_dic_value(request.data, 'attend', '-')
+            description = get_dic_value(request.data, 'description')
+
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+
+            actions.append(f'[아이디] {to_str(instance.id)}')
+
+            if instance.name != name:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[이름] {instance.name} → {name}')
+
+            if instance.amount != amount:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[금액] {instance.amount} → {amount}')
+
+            org_date_str = datetime_to_str(instance.date, '%Y-%m-%d') if instance.date else ''
+            date_str = date if date is not None else ''
+            if org_date_str != date_str:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[일자] {org_date_str} → {date_str}')
+
+            if instance.area != area:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[장소] {instance.area} → {area}')
+
+            if instance.attend != attend:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[참석 여부] {self.get_attend_str(instance.attend)} → {self.get_attend_str(attend)}')
+
+            if instance.description != get_dic_value(request.data, 'description'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[설명] {instance.description} → {description}')
+
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+
+            result = True
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.warning(f'[GuestBookAPI - update] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            audit_log = f"""편집 ( {', '.join(actions)} )"""
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def destroy(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            instance = self.get_object()
+            id = to_str(instance.id)
+            name = instance.name
+            amount = to_str(instance.amount) if instance.amount else ''
+            date = datetime_to_str(instance.date, '%Y-%m-%d') if instance.date else ''
+            area = instance.area
+            attend = self.get_attend_str(instance.attend)
+            description = instance.description
+
+            self.perform_destroy(instance)
+
+            result = True
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.warning(f'[GuestBookAPI - destroy] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[아이디] : {id}')
+            actions.append(f'[이름] : {name}')
+            actions.append(f'[금액] : {amount}')
+            actions.append(f'[일자] : {date}')
+            actions.append(f'[장소] : {area}')
+            actions.append(f'[참석 여부] : {attend}')
+            actions.append(f'[설명] : {description}')
+            audit_log = f"""삭제 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def get_attend_str(self, data):
+        result = ''
+        if data == 'Y':
+            result = '참석'
+
+        elif data == 'N':
+            result = '미참석'
+
+        elif data == '-':
+            result = '미정'
+
+        return result
 
 
 class NoteFilter(filters.FilterSet):
@@ -207,6 +485,9 @@ class NoteAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ['id', 'title', 'note', 'date']
+    
+    # 감사 로그 > 카테고리
+    category = '노트 관리'
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -223,16 +504,112 @@ class NoteAPI(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        if request.data.get('note'):
-            request.data['note'] = make_enc_value(request.data.get('note'))
+        # 감사 로그 > 내용
+        actions = []
 
-        return super().create(request, *args, **kwargs)
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            title = get_dic_value(request.data, 'title')
+
+            if request.data.get('note'):
+                request.data['note'] = make_enc_value(request.data.get('note'))
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            # 추가 성공 시 감사 로그 > 내용에 아이디 항목 추가
+            actions.append(f'[아이디] : {to_str(serializer.data.get("id"))}')
+
+            result = True
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Exception as e:
+            logger.warning(f'[NoteAPI - create] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[제목] : {title}')
+            audit_log = f"""추가 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
     def update(self, request, *args, **kwargs):
-        if request.data.get('note'):
-            request.data['note'] = make_enc_value(request.data.get('note'))
+        # 감사 로그 > 내용
+        actions = []
 
-        return super().update(request, *args, **kwargs)
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            if request.data.get('note'):
+                request.data['note'] = make_enc_value(request.data.get('note'))
+
+            title = get_dic_value(request.data, 'title')
+
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+
+            actions.append(f'[아이디] {to_str(instance.id)}')
+
+            if instance.title != title:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[제목] {instance.title} → {title}')
+
+            if instance.note != get_dic_value(request.data, 'note'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[내용 변경]')
+
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+
+            result = True
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.warning(f'[NoteAPI - update] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            audit_log = f"""편집 ( {', '.join(actions)} )"""
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def destroy(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            instance = self.get_object()
+            id = to_str(instance.id)
+            title = to_str(instance.title)
+
+            self.perform_destroy(instance)
+
+            result = True
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.warning(f'[NoteAPI - destroy] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[아이디] : {id}')
+            actions.append(f'[제목] : {title}')
+            audit_log = f"""삭제 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
 
 class SerialFilter(filters.FilterSet):
@@ -266,6 +643,9 @@ class SerialAPI(viewsets.ModelViewSet):
     # 정렬 적용 필드
     ordering_fields = ['id', 'type', 'title', 'value', 'description']
 
+    # 감사 로그 > 카테고리
+    category = '시리얼 번호 관리'
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -284,22 +664,131 @@ class SerialAPI(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        if request.data.get('value'):
-            request.data['value'] = make_enc_value(request.data.get('value'))
+        # 감사 로그 > 내용
+        actions = []
 
-        if request.data.get('description'):
-            request.data['description'] = make_enc_value(request.data.get('description'))
+        # 감사 로그 > 결과
+        result = False
 
-        return super().create(request, *args, **kwargs)
+        try:
+            serial_type = get_dic_value(request.data, 'type')
+            title = get_dic_value(request.data, 'title')
+
+            if request.data.get('value'):
+                request.data['value'] = make_enc_value(request.data.get('value'))
+
+            if request.data.get('description'):
+                request.data['description'] = make_enc_value(request.data.get('description'))
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            # 추가 성공 시 감사 로그 > 내용에 아이디 항목 추가
+            actions.append(f'[아이디] : {to_str(serializer.data.get("id"))}')
+
+            result = True
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Exception as e:
+            logger.warning(f'[SerialAPI - create] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[유형] : {serial_type}')
+            actions.append(f'[제품 명] : {title}')
+            audit_log = f"""추가 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
     def update(self, request, *args, **kwargs):
-        if request.data.get('value'):
-            request.data['value'] = make_enc_value(request.data.get('value'))
+        # 감사 로그 > 내용
+        actions = []
 
-        if request.data.get('description'):
-            request.data['description'] = make_enc_value(request.data.get('description'))
+        # 감사 로그 > 결과
+        result = False
 
-        return super().update(request, *args, **kwargs)
+        try:
+            if request.data.get('value'):
+                request.data['value'] = make_enc_value(request.data.get('value'))
+
+            if request.data.get('description'):
+                request.data['description'] = make_enc_value(request.data.get('description'))
+
+            serial_type = get_dic_value(request.data, 'type')
+            title = get_dic_value(request.data, 'title')
+
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+
+            actions.append(f'[아이디] {to_str(instance.id)}')
+
+            if instance.type != serial_type:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[유형] {instance.type} → {serial_type}')
+
+            if instance.title != title:
+                # 감사 로그 > 내용 추가
+                actions.append(f'[제품 명] {instance.title} → {title}')
+
+            if instance.value != get_dic_value(request.data, 'value'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[시리얼 번호 변경]')
+
+            if instance.description != get_dic_value(request.data, 'description'):
+                # 감사 로그 > 내용 추가
+                actions.append(f'[설명 변경]')
+
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+
+            result = True
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.warning(f'[SerialAPI - update] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            audit_log = f"""편집 ( {', '.join(actions)} )"""
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
+
+    def destroy(self, request, *args, **kwargs):
+        # 감사 로그 > 내용
+        actions = []
+
+        # 감사 로그 > 결과
+        result = False
+
+        try:
+            instance = self.get_object()
+            id = to_str(instance.id)
+            serial_type = to_str(instance.type)
+            title = to_str(instance.title)
+
+            self.perform_destroy(instance)
+
+            result = True
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.warning(f'[SerialAPI - destroy] {to_str(e)}')
+
+        finally:
+            # 감사 로그 기록
+            actions.append(f'[아이디] : {id}')
+            actions.append(f'[유형] : {serial_type}')
+            actions.append(f'[제품 명] : {title}')
+            audit_log = f"""삭제 ( {', '.join(actions)} )"""
+
+            insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
 
 
 class LottoAPI(viewsets.ModelViewSet):
