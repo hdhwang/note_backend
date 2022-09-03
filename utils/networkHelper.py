@@ -1,11 +1,13 @@
-from django.core.handlers import wsgi
+from django.core.handlers import wsgi, asgi
 from utils.formatHelper import *
+
 import logging
+import rest_framework
 logger = logging.getLogger(__name__)
 
 
 def get_client_ip(request):
-    if type(request) == wsgi.WSGIRequest:
+    if type(request) == wsgi.WSGIRequest or type(request) == asgi.ASGIRequest or type(request) == rest_framework.request.Request:
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
         if x_forwarded_for:
