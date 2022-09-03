@@ -1,7 +1,10 @@
 from .models import *
 from .serializers import *
+from .permissions import PermissionUser, PermissionAdmin, PermissionSuperUser
 
 from bs4 import BeautifulSoup
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import permission_required
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, versioning, status
 from rest_framework.response import Response
@@ -51,6 +54,7 @@ class AuditLogAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = AuditLogSerializer
     queryset = AuditLog.objects.all()
+    permission_classes = [PermissionSuperUser]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ['get']
@@ -98,6 +102,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = BankAccountSerializer
     queryset = BankAccount.objects.all()
+    permission_classes = [PermissionAdmin]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -161,6 +166,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = GuestBookSerializer
     queryset = GuestBook.objects.all()
+    permission_classes = [PermissionAdmin]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -191,6 +197,7 @@ class NoteAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = NoteSerializer
     queryset = Note.objects.all()
+    permission_classes = [PermissionAdmin]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -248,6 +255,7 @@ class SerialAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = SerialSerializer
     queryset = Serial.objects.all()
+    permission_classes = [PermissionAdmin]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -298,6 +306,7 @@ class LottoAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     filter_backends = []
     pagination_class = None
+    permission_classes = [PermissionUser]
 
     def list(self, request, *args, **kwargs):
         data = self.gen_lotto_by_statistics()

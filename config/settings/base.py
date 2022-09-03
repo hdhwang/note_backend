@@ -143,14 +143,27 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'config.paginations.CustomPagination',
     # Custom 예외처리 핸들러 설정
     'EXCEPTION_HANDLER': 'config.custom_exception_handler.handle_exception',
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'rest_framework.authentication.TokenAuthentication',
-    # ],
+    # 기본 인증 방식을 토큰으로 설정
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    # 기본 퍼미션 클래스 설정
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SWAGGER_SETTINGS = {
-    # 인증 정보 관련 버튼 삭제 처리 (실제 배포 시에는 필요함)
-    'SECURITY_DEFINITIONS': None,
+    # Django Login 버튼 삭제 처리
+    'USE_SESSION_AUTH': False,
+
+    'SECURITY_DEFINITIONS' :{
+        'Token':{
+            'type':'apiKey',
+            'name':'Authorization',
+            'in':'header'
+        }
+    }
 }
 
 LOGDIR = Path(os.getenv('LOGDIR')) if os.getenv('LOGDIR') else BASE_DIR / 'logs'
