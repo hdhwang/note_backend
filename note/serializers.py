@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import ChoiceYN, AuditLog, BankAccount, GuestBook, Note, Serial
-from utils.AESHelper import get_dec_value
 from utils.formatHelper import *
 
 
@@ -36,15 +35,6 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
-    account = serializers.SerializerMethodField()
-    description = serializers.SerializerMethodField()
-
-    def get_account(self, obj):
-        return get_dec_value(obj.account)
-
-    def get_description(self, obj):
-        return get_dec_value(obj.description)
-
     class Meta:
         model = BankAccount
         fields = '__all__'
@@ -57,26 +47,12 @@ class GuestBookSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    note = serializers.SerializerMethodField()
-
-    def get_note(self, obj):
-        return get_dec_value(obj.note)
-
     class Meta:
         model = Note
         fields = '__all__'
 
 
 class SerialSerializer(serializers.ModelSerializer):
-    value = serializers.SerializerMethodField()
-    description = serializers.SerializerMethodField()
-
-    def get_value(self, obj):
-        return get_dec_value(obj.value)
-
-    def get_description(self, obj):
-        return get_dec_value(obj.description)
-
     class Meta:
         model = Serial
         fields = '__all__'

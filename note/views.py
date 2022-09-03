@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, versioning, status
 from rest_framework.response import Response
-from utils.AESHelper import make_enc_value
+from utils.AESHelper import make_enc_value, get_dec_value
 from utils.formatHelper import *
 from utils.regexHelper import *
 
@@ -25,11 +25,11 @@ class AuditLogFilter(filters.FilterSet):
     ip = filters.CharFilter(method='ip_range_filter')
 
     def ip_range_filter(self, queryset, value, *args):
-        input_value = args[0]
+        req_value = args[0]
 
         # IP 주소 또는 CIDR 형태인 경우 (192.168.0.1 OR 192.168.0.1/24)
-        if ip_cidr_regex.match(input_value):
-            ip_addr = ipaddress.ip_network(input_value, False)
+        if ip_cidr_regex.match(req_value):
+            ip_addr = ipaddress.ip_network(req_value, False)
 
             start_ip = to_int(ip_addr.network_address)
             end_ip = to_int(ip_addr.broadcast_address)
@@ -37,7 +37,7 @@ class AuditLogFilter(filters.FilterSet):
             return queryset.filter(ip__gte=start_ip, ip__lte=end_ip)
 
         else:
-            return queryset.filter(ip=input_value)
+            return queryset.filter(ip=req_value)
 
     start_date = filters.DateFilter(field_name='date', lookup_expr='gte')
     end_date = filters.DateFilter(field_name='date', lookup_expr='lte')
@@ -81,9 +81,13 @@ class BankAccountFilter(filters.FilterSet):
     bank = filters.CharFilter(lookup_expr='icontains')
     account = filters.CharFilter(method='enc_account_filter')
     account_holder = filters.CharFilter(lookup_expr='icontains')
+    description = filters.CharFilter(method='enc_description_filter')
 
     def enc_account_filter(self, queryset, value, *args):
         return queryset.filter(account=make_enc_value(args[0]))
+
+    def enc_description_filter(self, queryset, value, *args):
+        return queryset.filter(description=make_enc_value(args[0]))
 
     class Meta:
         model = BankAccount
@@ -96,7 +100,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     queryset = BankAccount.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get']
+    http_method_names = ['get', 'post', 'delete']
     # http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
@@ -104,6 +108,36 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ['id', 'bank', 'account', 'account_holder', 'description']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            for data in serializer.data:
+                if data.get('account'):
+                    data['account'] = get_dec_value(data.get('account'))
+
+                if data.get('description'):
+                    data['description'] = get_dec_value(data.get('description'))
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        if request.data.get('account'):
+            request.data['account'] = make_enc_value(request.data.get('account'))
+
+        if request.data.get('description'):
+            request.data['description'] = make_enc_value(request.data.get('description'))
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class GuestBookFilter(filters.FilterSet):
@@ -125,8 +159,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
     queryset = GuestBook.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get']
-    # http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
     filterset_class = GuestBookFilter
@@ -156,7 +189,7 @@ class NoteAPI(viewsets.ModelViewSet):
     queryset = Note.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get']
+    http_method_names = ['get', 'post', 'delete']
     # http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
@@ -164,6 +197,30 @@ class NoteAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ['id', 'title', 'note', 'date']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            for data in serializer.data:
+                if data.get('note'):
+                    data['note'] = get_dec_value(data.get('note'))
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        if request.data.get('note'):
+            request.data['note'] = make_enc_value(request.data.get('note'))
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class SerialFilter(filters.FilterSet):
@@ -188,7 +245,7 @@ class SerialAPI(viewsets.ModelViewSet):
     queryset = Serial.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get']
+    http_method_names = ['get', 'post', 'delete']
     # http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
@@ -196,6 +253,36 @@ class SerialAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ['id', 'type', 'title', 'value', 'description']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            for data in serializer.data:
+                if data.get('value'):
+                    data['value'] = get_dec_value(data.get('value'))
+
+                if data.get('description'):
+                    data['description'] = get_dec_value(data.get('description'))
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        if request.data.get('value'):
+            request.data['value'] = make_enc_value(request.data.get('value'))
+
+        if request.data.get('description'):
+            request.data['description'] = make_enc_value(request.data.get('description'))
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class LottoAPI(viewsets.ModelViewSet):
