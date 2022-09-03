@@ -20,6 +20,7 @@ class AuditLog(models.Model):
 
     class Meta:
         db_table = 'audit_log'
+        ordering = ['id']
 
 
 class BankAccount(models.Model):
@@ -31,6 +32,7 @@ class BankAccount(models.Model):
     class Meta:
         db_table = 'bank_account'
         unique_together = (('bank', 'account'),)
+        ordering = ['id']
 
 
 class GuestBook(models.Model):
@@ -43,6 +45,7 @@ class GuestBook(models.Model):
 
     class Meta:
         db_table = 'guest_book'
+        ordering = ['id']
 
 
 class Note(models.Model):
@@ -52,6 +55,7 @@ class Note(models.Model):
 
     class Meta:
         db_table = 'note'
+        ordering = ['id']
 
 
 class Serial(models.Model):
@@ -62,3 +66,4 @@ class Serial(models.Model):
 
     class Meta:
         db_table = 'serial'
+        ordering = ['id']
