@@ -46,12 +46,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'django_filters',
     'drf_yasg',
-    'django_crontab',
     'note',
 ]
 
@@ -64,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.custom_exception_handler.ExceptionMiddleware',
 ]
 
 # CORS_ORIGIN_ALLOW_ALL = True
@@ -123,16 +124,36 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
+    # 버저닝 클래스를 URLPathVersioning으로 설정
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    # DRF 기본 렌더링을 json으로 설정 (json으로 설정하지 않으면 HTML로 렌더링되며, 파라미터 추가를 통해 json으로 응답을 받아야하므로 설정함)
+    'DEFAULT_RENERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    # DRF 기본 파서를 json으로 설정
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    # 필터 설정
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', 'PAGE_SIZE': 10,
+    # Custom 페이징 클래스 설정
+    'DEFAULT_PAGINATION_CLASS': 'config.paginations.CustomPagination',
+    # Custom 예외처리 핸들러 설정
     'EXCEPTION_HANDLER': 'config.custom_exception_handler.handle_exception',
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',
+    # ],
 }
 
+SWAGGER_SETTINGS = {
+    # 인증 정보 관련 버튼 삭제 처리 (실제 배포 시에는 필요함)
+    'SECURITY_DEFINITIONS': None,
+}
+
+LOGDIR = Path(os.getenv('LOGDIR')) if os.getenv('LOGDIR') else BASE_DIR / 'logs'
 LOGGING = {
     'version': 1,
     'diable_existing_loggers': False,
@@ -154,7 +175,7 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 10,   # 로그 파일 당 10M 까지
             'backupCount': 10,              # 로그 파일을 최대 10개까지 유지
             # 'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/django.log'),
+            'filename': LOGDIR / 'django.log',
             'formatter': 'default'
         },
     },
@@ -177,8 +198,9 @@ LOGGING = {
     },
 }
 
-CRONTAB_DJANGO_MANAGE_PATH = os.path.join(BASE_DIR, 'manage.py')
-CRONTAB_COMMENT = 'note'
+CRONTAB_DJANGO_MANAGE_PATH = BASE_DIR / 'manage.py'
+CRONTAB_COMMENT = 'note_drf'
+
 CRONJOBS = [
     ('0 0 * * *', 'django.core.management.call_command', ['clearsessions']),     # 매 일 0시 만료 세션 정리 수행
 ]
@@ -201,8 +223,15 @@ USE_TZ = False
 
 # 웹페이지에 사용할 정적파일의 최상위 URL 경로
 STATIC_URL = 'static/'
+
+# 개발 단계에서 사용하는 정적 파일이 위치한 경로들을 지정하는 설정 항목 (현재 사용하는 static 파일이 없어서 주석 처리 함)
+# STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Django 프로젝트에서 사용하는 모든 정적 파일을 한 곳에 모아넣는 경로
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
