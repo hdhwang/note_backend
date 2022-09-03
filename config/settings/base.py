@@ -199,7 +199,7 @@ LOGGING = {
 }
 
 CRONTAB_DJANGO_MANAGE_PATH = BASE_DIR / 'manage.py'
-CRONTAB_COMMENT = 'note_drf'
+CRONTAB_COMMENT = 'note'
 
 CRONJOBS = [
     ('0 0 * * *', 'django.core.management.call_command', ['clearsessions']),     # 매 일 0시 만료 세션 정리 수행
