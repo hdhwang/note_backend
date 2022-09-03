@@ -9,7 +9,7 @@ class ChoiceYN(models.IntegerChoices):
 
 class AuditLog(models.Model):
     user = models.ForeignKey(User, models.DO_NOTHING, db_column='user', blank=True, null=True)
-    ip = models.GenericIPAddressField(protocol='ipv4', null=True)
+    ip = models.PositiveIntegerField(blank=True, null=True)
     category = models.CharField(max_length=32, blank=True, null=True)
     sub_category = models.CharField(max_length=32, blank=True, null=True)
     action = models.TextField()

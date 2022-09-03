@@ -3,6 +3,8 @@ from .models import AuditLog, BankAccount, GuestBook, Note, Serial
 from .serializers import AuditLogSerializer, BankAccountSerializer, GuestBookSerializer, NoteSerializer, SerialSerializer
 from django_filters import rest_framework as filters
 from utils.AESHelper import make_enc_value
+from utils.formatHelper import *
+from utils.regexHelper import *
 
 
 class CustomURLPathVersioning(versioning.URLPathVersioning):
@@ -11,6 +13,22 @@ class CustomURLPathVersioning(versioning.URLPathVersioning):
 
 class AuditLogFilter(filters.FilterSet):
     user = filters.CharFilter(lookup_expr='icontains')
+    ip = filters.CharFilter(method='ip_range_filter')
+
+    def ip_range_filter(self, queryset, value, *args):
+        input_value = args[0]
+
+        # IP 주소 또는 CIDR 형태인 경우 (192.168.0.1 OR 192.168.0.1/24)
+        if ip_cidr_regex.match(input_value):
+            ip_addr = ipaddress.ip_network(input_value, False)
+
+            start_ip = to_int(ip_addr.network_address)
+            end_ip = to_int(ip_addr.broadcast_address)
+
+            return queryset.filter(ip__gte=start_ip, ip__lte=end_ip)
+
+        else:
+            return queryset.filter(ip=input_value)
 
     start_date = filters.DateFilter(field_name='date', lookup_expr='gte')
     end_date = filters.DateFilter(field_name='date', lookup_expr='lte')

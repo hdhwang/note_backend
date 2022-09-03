@@ -2,16 +2,25 @@ from rest_framework import serializers
 
 from .models import ChoiceYN, AuditLog, BankAccount, GuestBook, Note, Serial
 from utils.AESHelper import get_dec_value
+from utils.formatHelper import *
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    ip = serializers.SerializerMethodField()
     result = serializers.SerializerMethodField()
 
     def get_user(self, obj):
         result = None
         if obj.user:
             result = obj.user.username
+
+        return result
+
+    def get_ip(self, obj):
+        result = None
+        if obj.ip:
+            result = int_to_ip(obj.ip)
 
         return result
 
