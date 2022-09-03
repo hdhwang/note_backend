@@ -3,8 +3,6 @@ from .serializers import *
 from .permissions import PermissionUser, PermissionAdmin, PermissionSuperUser
 
 from bs4 import BeautifulSoup
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import permission_required
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, versioning, status
 from rest_framework.response import Response
@@ -113,7 +111,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     filterset_class = BankAccountFilter
 
     # 정렬 적용 필드
-    ordering_fields = ['id', 'bank', 'account', 'account_holder', 'description']
+    ordering_fields = ['id', 'bank', 'account_holder']
 
     # 감사 로그 > 카테고리
     category = '계좌번호 관리'
@@ -484,7 +482,7 @@ class NoteAPI(viewsets.ModelViewSet):
     filterset_class = NoteFilter
 
     # 정렬 적용 필드
-    ordering_fields = ['id', 'title', 'note', 'date']
+    ordering_fields = ['id', 'title', 'date']
     
     # 감사 로그 > 카테고리
     category = '노트 관리'
@@ -641,7 +639,7 @@ class SerialAPI(viewsets.ModelViewSet):
     filterset_class = SerialFilter
 
     # 정렬 적용 필드
-    ordering_fields = ['id', 'type', 'title', 'value', 'description']
+    ordering_fields = ['id', 'type', 'title']
 
     # 감사 로그 > 카테고리
     category = '시리얼 번호 관리'

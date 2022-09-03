@@ -8,6 +8,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     ip = serializers.SerializerMethodField()
     result = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
 
     def get_user(self, obj):
         result = None
@@ -24,7 +25,14 @@ class AuditLogSerializer(serializers.ModelSerializer):
         return result
 
     def get_result(self, obj):
-        result = 'Y' if obj.result is ChoiceYN.Y else 'N'
+        result = 'Y' if obj.result == ChoiceYN.Y else 'N'
+
+        return result
+
+    def get_date(self, obj):
+        result = ''
+        if obj.date:
+            result = datetime_to_str(obj.date)
 
         return result
 
@@ -47,6 +55,15 @@ class GuestBookSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
+    date = serializers.SerializerMethodField()
+
+    def get_date(self, obj):
+        result = ''
+        if obj.date:
+            result = datetime_to_str(obj.date)
+
+        return result
+
     class Meta:
         model = Note
         fields = '__all__'
