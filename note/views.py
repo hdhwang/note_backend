@@ -100,8 +100,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     queryset = BankAccount.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get', 'post', 'delete']
-    # http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
     filterset_class = BankAccountFilter
@@ -133,11 +132,16 @@ class BankAccountAPI(viewsets.ModelViewSet):
         if request.data.get('description'):
             request.data['description'] = make_enc_value(request.data.get('description'))
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.data.get('value'):
+            request.data['value'] = make_enc_value(request.data.get('value'))
+
+        if request.data.get('description'):
+            request.data['description'] = make_enc_value(request.data.get('description'))
+
+        return super().update(request, *args, **kwargs)
 
 
 class GuestBookFilter(filters.FilterSet):
@@ -189,8 +193,7 @@ class NoteAPI(viewsets.ModelViewSet):
     queryset = Note.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get', 'post', 'delete']
-    # http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
     filterset_class = NoteFilter
@@ -216,11 +219,13 @@ class NoteAPI(viewsets.ModelViewSet):
         if request.data.get('note'):
             request.data['note'] = make_enc_value(request.data.get('note'))
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.data.get('note'):
+            request.data['note'] = make_enc_value(request.data.get('note'))
+
+        return super().update(request, *args, **kwargs)
 
 
 class SerialFilter(filters.FilterSet):
@@ -245,8 +250,7 @@ class SerialAPI(viewsets.ModelViewSet):
     queryset = Serial.objects.all()
 
     # 지원 HTTP 메소드 설정 (CRUD)
-    http_method_names = ['get', 'post', 'delete']
-    # http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     # 커스텀 필터 클래스 적용
     filterset_class = SerialFilter
@@ -278,11 +282,16 @@ class SerialAPI(viewsets.ModelViewSet):
         if request.data.get('description'):
             request.data['description'] = make_enc_value(request.data.get('description'))
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.data.get('value'):
+            request.data['value'] = make_enc_value(request.data.get('value'))
+
+        if request.data.get('description'):
+            request.data['description'] = make_enc_value(request.data.get('description'))
+
+        return super().update(request, *args, **kwargs)
 
 
 class LottoAPI(viewsets.ModelViewSet):
