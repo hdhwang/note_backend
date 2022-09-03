@@ -211,7 +211,7 @@ LOGGING = {
     },
 }
 
-CRONTAB_DJANGO_MANAGE_PATH = BASE_DIR / 'manage.py'
+CRONTAB_DJANGO_MANAGE_PATH = os.path.abspath(__file__+'/../../..') + '/manage.py'
 CRONTAB_COMMENT = 'note'
 
 CRONJOBS = [
