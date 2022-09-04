@@ -17,7 +17,7 @@ def get_kms_value():
 
         data = {'key': f'{key}'}
         headers = {'Authorization': f'Token {token}'}
-        response = requests.get(url, params=data, headers=headers)
+        response = requests.get(url, params=data, headers=headers, verify=False)
         if response.status_code == 200 and response.json()['data']:
             result = response.json()['data'][0]['value']
 
