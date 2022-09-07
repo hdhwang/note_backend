@@ -42,3 +42,4 @@ tzdata==2022.1
 uritemplate==4.1.1
 urllib3==1.26.6
 zipp==3.5.0
+uWSGI==2.0.20
