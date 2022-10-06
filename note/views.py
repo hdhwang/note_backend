@@ -24,9 +24,12 @@ class CustomURLPathVersioning(versioning.URLPathVersioning):
 
 
 class AuditLogFilter(filters.FilterSet):
-    user = filters.CharFilter(lookup_expr='icontains')
+    user = filters.CharFilter(method='user_filter')
     ip = filters.CharFilter(method='ip_range_filter')
     result = filters.CharFilter(method='result_filter')
+
+    def user_filter(self, queryset, value, *args):
+        return queryset.filter(user__username__icontains=args[0])
 
     def ip_range_filter(self, queryset, value, *args):
         req_value = args[0]
