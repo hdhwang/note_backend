@@ -32,7 +32,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
     def get_date(self, obj):
         result = ''
         if obj.date:
-            result = datetime_to_str(obj.date)
+            result = datetime_to_str(obj.date, date_format='%Y-%m-%d %H:%M:%S')
 
         return result
 
