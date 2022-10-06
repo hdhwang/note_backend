@@ -26,6 +26,7 @@ class CustomURLPathVersioning(versioning.URLPathVersioning):
 class AuditLogFilter(filters.FilterSet):
     user = filters.CharFilter(lookup_expr='icontains')
     ip = filters.CharFilter(method='ip_range_filter')
+    result = filters.CharFilter(method='result_filter')
 
     def ip_range_filter(self, queryset, value, *args):
         req_value = args[0]
@@ -42,8 +43,11 @@ class AuditLogFilter(filters.FilterSet):
         else:
             return queryset.filter(ip=req_value)
 
-    start_date = filters.DateFilter(field_name='date', lookup_expr='gte')
-    end_date = filters.DateFilter(field_name='date', lookup_expr='lte')
+    def result_filter(self, queryset, value, *args):
+        return queryset.filter(result=ChoiceYN.Y) if args[0].upper() == 'Y' else queryset.filter(result=ChoiceYN.N)
+
+    start_date = filters.DateTimeFilter(field_name='date', lookup_expr='gte')
+    end_date = filters.DateTimeFilter(field_name='date', lookup_expr='lte')
 
     class Meta:
         model = AuditLog
