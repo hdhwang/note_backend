@@ -182,6 +182,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
@@ -198,8 +199,6 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
-
-            actions.append(f'[아이디] {to_str(instance.id)}')
 
             if instance.bank != bank:
                 # 감사 로그 > 내용 추가
@@ -240,15 +239,15 @@ class BankAccountAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
 
         try:
             instance = self.get_object()
-            id = to_str(instance.id)
-            bank = to_str(instance.bank)
-            account_holder = to_str(instance.account_holder)
+            actions.append(f'[은행] : {to_str(instance.bank)}')
+            actions.append(f'[예금주] : {to_str(instance.account_holder)}')
 
             self.perform_destroy(instance)
 
@@ -260,9 +259,6 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
         finally:
             # 감사 로그 기록
-            actions.append(f'[아이디] : {id}')
-            actions.append(f'[은행] : {bank}')
-            actions.append(f'[예금주] : {account_holder}')
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
@@ -346,6 +342,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
@@ -360,8 +357,6 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
-
-            actions.append(f'[아이디] {to_str(instance.id)}')
 
             if instance.name != name:
                 # 감사 로그 > 내용 추가
@@ -412,19 +407,19 @@ class GuestBookAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
 
         try:
             instance = self.get_object()
-            id = to_str(instance.id)
-            name = instance.name
-            amount = to_str(instance.amount) if instance.amount else ''
-            date = datetime_to_str(instance.date, '%Y-%m-%d') if instance.date else ''
-            area = instance.area
-            attend = self.get_attend_str(instance.attend)
-            description = instance.description
+            actions.append(f'[이름] : {instance.name}')
+            actions.append(f"""[금액] : {to_str(instance.amount) if instance.amount else ''}""")
+            actions.append(f"""[일자] : {datetime_to_str(instance.date, '%Y-%m-%d') if instance.date else ''}""")
+            actions.append(f'[장소] : {instance.area}')
+            actions.append(f'[참석 여부] : {self.get_attend_str(instance.attend)}')
+            actions.append(f'[설명] : {instance.description}')
 
             self.perform_destroy(instance)
 
@@ -436,13 +431,6 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
         finally:
             # 감사 로그 기록
-            actions.append(f'[아이디] : {id}')
-            actions.append(f'[이름] : {name}')
-            actions.append(f'[금액] : {amount}')
-            actions.append(f'[일자] : {date}')
-            actions.append(f'[장소] : {area}')
-            actions.append(f'[참석 여부] : {attend}')
-            actions.append(f'[설명] : {description}')
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
@@ -545,6 +533,7 @@ class NoteAPI(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
@@ -557,8 +546,6 @@ class NoteAPI(viewsets.ModelViewSet):
 
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
-
-            actions.append(f'[아이디] {to_str(instance.id)}')
 
             if instance.title != title:
                 # 감사 로그 > 내용 추가
@@ -591,14 +578,14 @@ class NoteAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
 
         try:
             instance = self.get_object()
-            id = to_str(instance.id)
-            title = to_str(instance.title)
+            actions.append(f'[제목] : {to_str(instance.title)}')
 
             self.perform_destroy(instance)
 
@@ -610,8 +597,6 @@ class NoteAPI(viewsets.ModelViewSet):
 
         finally:
             # 감사 로그 기록
-            actions.append(f'[아이디] : {id}')
-            actions.append(f'[제목] : {title}')
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
@@ -710,6 +695,7 @@ class SerialAPI(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
@@ -726,8 +712,6 @@ class SerialAPI(viewsets.ModelViewSet):
 
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
-
-            actions.append(f'[아이디] {to_str(instance.id)}')
 
             if instance.type != serial_type:
                 # 감사 로그 > 내용 추가
@@ -768,15 +752,15 @@ class SerialAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
+        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
 
         try:
             instance = self.get_object()
-            id = to_str(instance.id)
-            serial_type = to_str(instance.type)
-            title = to_str(instance.title)
+            actions.append(f'[유형] : {to_str(instance.type)}')
+            actions.append(f'[제품 명] : {to_str(instance.title)}')
 
             self.perform_destroy(instance)
 
@@ -788,9 +772,6 @@ class SerialAPI(viewsets.ModelViewSet):
 
         finally:
             # 감사 로그 기록
-            actions.append(f'[아이디] : {id}')
-            actions.append(f'[유형] : {serial_type}')
-            actions.append(f'[제품 명] : {title}')
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(request.user.id, request, self.category, '-', audit_log, result)
