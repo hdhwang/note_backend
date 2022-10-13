@@ -25,9 +25,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
         return result
 
     def get_result(self, obj):
-        result = 'Y' if obj.result == ChoiceYN.Y else 'N'
-
-        return result
+        return obj.get_result_display()
 
     def get_date(self, obj):
         result = ''
