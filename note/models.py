@@ -10,8 +10,8 @@ def choice_str_to_int(choice_class, input_value):
 
 
 class ChoiceResult(models.IntegerChoices):
-    SUCCESS = 1, 'Success'
-    FAIL = 0, 'Fail'
+    SUCCESS = 1, '성공'
+    FAIL = 0, '실패'
 
 
 class AuditLog(models.Model):
