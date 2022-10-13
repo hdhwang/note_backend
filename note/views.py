@@ -24,19 +24,19 @@ class CustomURLPathVersioning(versioning.URLPathVersioning):
 
 
 class AuditLogFilter(filters.FilterSet):
+    result_list = [list(reversed(choice_result)) for choice_result in list(ChoiceResult.choices)]
+
     user = filters.CharFilter(method='user_filter')
     ip = filters.CharFilter(method='ip_range_filter')
-    result = filters.CharFilter(method='result_filter')
+    result = filters.ChoiceFilter(choices=result_list, method='result_filter', help_text=f'Available values : {", ".join(list(zip(*ChoiceResult.choices))[1])}')
 
-    def user_filter(self, queryset, value, *args):
-        return queryset.filter(user__username__icontains=args[0])
+    def user_filter(self, queryset, name, value):
+        return queryset.filter(user__username__icontains=value)
 
-    def ip_range_filter(self, queryset, value, *args):
-        req_value = args[0]
-
+    def ip_range_filter(self, queryset, name, value):
         # IP 주소 또는 CIDR 형태인 경우 (192.168.0.1 OR 192.168.0.1/24)
-        if ip_cidr_regex.match(req_value):
-            ip_addr = ipaddress.ip_network(req_value, False)
+        if ip_cidr_regex.match(value):
+            ip_addr = ipaddress.ip_network(value, False)
 
             start_ip = to_int(ip_addr.network_address)
             end_ip = to_int(ip_addr.broadcast_address)
@@ -44,10 +44,10 @@ class AuditLogFilter(filters.FilterSet):
             return queryset.filter(ip__gte=start_ip, ip__lte=end_ip)
 
         else:
-            return queryset.filter(ip=req_value)
+            return queryset.filter(ip=value)
 
-    def result_filter(self, queryset, value, *args):
-        return queryset.filter(result=ChoiceYN.Y) if args[0].upper() == 'Y' else queryset.filter(result=ChoiceYN.N)
+    def result_filter(self, queryset, name, value):
+        return queryset.filter(result=choice_str_to_int(ChoiceResult, value))
 
     start_date = filters.DateTimeFilter(field_name='date', lookup_expr='gte')
     end_date = filters.DateTimeFilter(field_name='date', lookup_expr='lte')
@@ -94,11 +94,11 @@ class BankAccountFilter(filters.FilterSet):
     account_holder = filters.CharFilter(lookup_expr='icontains')
     description = filters.CharFilter(method='enc_description_filter')
 
-    def enc_account_filter(self, queryset, value, *args):
-        return queryset.filter(account=make_enc_value(args[0]))
+    def enc_account_filter(self, queryset, name, value):
+        return queryset.filter(account=make_enc_value(value))
 
-    def enc_description_filter(self, queryset, value, *args):
-        return queryset.filter(description=make_enc_value(args[0]))
+    def enc_description_filter(self, queryset, name, value):
+        return queryset.filter(description=make_enc_value(value))
 
     class Meta:
         model = BankAccount
@@ -453,8 +453,8 @@ class NoteFilter(filters.FilterSet):
     title = filters.CharFilter(lookup_expr='icontains')
     note = filters.CharFilter(method='enc_note_filter')
 
-    def enc_note_filter(self, queryset, value, *args):
-        return queryset.filter(note=make_enc_value(args[0]))
+    def enc_note_filter(self, queryset, name, value):
+        return queryset.filter(note=make_enc_value(value))
 
     start_date = filters.DateFilter(field_name='date', lookup_expr='gte')
     end_date = filters.DateFilter(field_name='date', lookup_expr='lte')
@@ -607,11 +607,11 @@ class SerialFilter(filters.FilterSet):
     value = filters.CharFilter(method='enc_value_filter')
     description = filters.CharFilter(method='enc_description_filter')
 
-    def enc_value_filter(self, queryset, value, *args):
-        return queryset.filter(value=make_enc_value(args[0]))
+    def enc_value_filter(self, queryset, name, value):
+        return queryset.filter(value=make_enc_value(value))
 
-    def enc_description_filter(self, queryset, value, *args):
-        return queryset.filter(description=make_enc_value(args[0]))
+    def enc_description_filter(self, queryset, name, value):
+        return queryset.filter(description=make_enc_value(value))
 
     class Meta:
         model = Serial

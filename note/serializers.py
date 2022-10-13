@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ChoiceYN, AuditLog, BankAccount, GuestBook, Note, Serial
+from .models import ChoiceResult, AuditLog, BankAccount, GuestBook, Note, Serial
 from utils.formatHelper import *
 
 
