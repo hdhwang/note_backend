@@ -2,9 +2,16 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class ChoiceYN(models.IntegerChoices):
-    Y = 1
-    N = 0
+def choice_str_to_int(choice_class, input_value):
+    for num, string in choice_class.choices:
+        if string.upper() == input_value.upper():
+            return num
+    return None
+
+
+class ChoiceResult(models.IntegerChoices):
+    SUCCESS = 1, 'Success'
+    FAIL = 0, 'Fail'
 
 
 class AuditLog(models.Model):
@@ -14,7 +21,7 @@ class AuditLog(models.Model):
     sub_category = models.CharField(max_length=32, blank=True, null=True)
     action = models.TextField()
     result = models.IntegerField(
-        choices=ChoiceYN.choices
+        choices=ChoiceResult.choices
     )
     date = models.DateTimeField(auto_now_add=True)
 

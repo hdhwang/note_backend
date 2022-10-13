@@ -19,7 +19,7 @@ def insert_audit_log(user_id, request, category, sub_category, action, result):
             category=category,
             sub_category=sub_category,
             action=action,
-            result=models.ChoiceYN.Y if result is True else models.ChoiceYN.N,
+            result=models.ChoiceResult.SUCCESS if result is True else models.ChoiceResult.FAIL,
         )
         audit_log_data.save()
         log_result = True
