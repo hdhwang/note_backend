@@ -10,24 +10,22 @@ def choice_str_to_int(choice_class, input_value):
 
 
 class ChoiceResult(models.IntegerChoices):
-    SUCCESS = 1, '성공'
-    FAIL = 0, '실패'
+    SUCCESS = 1, "성공"
+    FAIL = 0, "실패"
 
 
 class AuditLog(models.Model):
-    user = models.ForeignKey(User, models.DO_NOTHING, db_column='user', blank=True, null=True)
+    user = models.CharField(max_length=128, blank=True, null=True)
     ip = models.PositiveIntegerField(blank=True, null=True)
     category = models.CharField(max_length=32, blank=True, null=True)
     sub_category = models.CharField(max_length=32, blank=True, null=True)
     action = models.TextField()
-    result = models.IntegerField(
-        choices=ChoiceResult.choices
-    )
+    result = models.IntegerField(choices=ChoiceResult.choices)
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'audit_log'
-        ordering = ['id']
+        db_table = "audit_log"
+        ordering = ["id"]
 
 
 class BankAccount(models.Model):
@@ -37,9 +35,9 @@ class BankAccount(models.Model):
     description = models.CharField(max_length=1024, blank=True, null=True)
 
     class Meta:
-        db_table = 'bank_account'
-        unique_together = (('bank', 'account'),)
-        ordering = ['id']
+        db_table = "bank_account"
+        unique_together = (("bank", "account"),)
+        ordering = ["id"]
 
 
 class GuestBook(models.Model):
@@ -51,8 +49,8 @@ class GuestBook(models.Model):
     description = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
-        db_table = 'guest_book'
-        ordering = ['id']
+        db_table = "guest_book"
+        ordering = ["id"]
 
 
 class Note(models.Model):
@@ -61,8 +59,8 @@ class Note(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'note'
-        ordering = ['id']
+        db_table = "note"
+        ordering = ["id"]
 
 
 class Serial(models.Model):
@@ -72,5 +70,5 @@ class Serial(models.Model):
     description = models.CharField(max_length=1024, blank=True, null=True)
 
     class Meta:
-        db_table = 'serial'
-        ordering = ['id']
+        db_table = "serial"
+        ordering = ["id"]
