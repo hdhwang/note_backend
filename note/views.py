@@ -146,6 +146,9 @@ class BankAccountAPI(viewsets.ModelViewSet):
     # 감사 로그 > 카테고리
     category = "계좌번호 관리"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -162,6 +165,9 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         # 감사 로그 > 내용
@@ -197,6 +203,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[BankAccountAPI - create] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -263,6 +270,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[BankAccountAPI - update] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -291,6 +299,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[BankAccountAPI - destroy] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -341,6 +350,12 @@ class GuestBookAPI(viewsets.ModelViewSet):
     # 감사 로그 > 카테고리
     category = "결혼식 방명록"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def create(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
@@ -371,6 +386,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[GuestBookAPI - create] {to_str(e)}")
+            raise
 
         finally:
             date_str = date if date is not None else ""
@@ -454,6 +470,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[GuestBookAPI - update] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -490,6 +507,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[GuestBookAPI - destroy] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -546,6 +564,9 @@ class NoteAPI(viewsets.ModelViewSet):
     # 감사 로그 > 카테고리
     category = "노트 관리"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -559,6 +580,9 @@ class NoteAPI(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         # 감사 로그 > 내용
@@ -588,6 +612,7 @@ class NoteAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[NoteAPI - create] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -639,6 +664,7 @@ class NoteAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[NoteAPI - update] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -666,6 +692,7 @@ class NoteAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[NoteAPI - destroy] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -710,6 +737,9 @@ class SerialAPI(viewsets.ModelViewSet):
     # 감사 로그 > 카테고리
     category = "시리얼 번호 관리"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -726,6 +756,9 @@ class SerialAPI(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         # 감사 로그 > 내용
@@ -761,6 +794,7 @@ class SerialAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[SerialAPI - create] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -827,6 +861,7 @@ class SerialAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[SerialAPI - update] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -855,6 +890,7 @@ class SerialAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[SerialAPI - destroy] {to_str(e)}")
+            raise
 
         finally:
             # 감사 로그 기록
@@ -926,5 +962,6 @@ class LottoAPI(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.warning(f"[LottoAPI - gen_lotto_by_statistics] {to_str(e)}")
+            raise
 
         return result
