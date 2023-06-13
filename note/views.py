@@ -132,7 +132,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = BankAccountSerializer
     queryset = BankAccount.objects.all()
-    permission_classes = [PermissionAdmin]
+    permission_classes = [PermissionUser]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ["get", "post", "put", "delete"]
@@ -336,7 +336,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = GuestBookSerializer
     queryset = GuestBook.objects.all()
-    permission_classes = [PermissionAdmin]
+    permission_classes = [PermissionUser]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ["get", "post", "put", "delete"]
@@ -550,7 +550,7 @@ class NoteAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = NoteSerializer
     queryset = Note.objects.all()
-    permission_classes = [PermissionAdmin]
+    permission_classes = [PermissionUser]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ["get", "post", "put", "delete"]
@@ -723,7 +723,7 @@ class SerialAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     serializer_class = SerialSerializer
     queryset = Serial.objects.all()
-    permission_classes = [PermissionAdmin]
+    permission_classes = [PermissionUser]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ["get", "post", "put", "delete"]
