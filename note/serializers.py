@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ChoiceResult, AuditLog, BankAccount, GuestBook, Note, Serial
+from .models import AuditLog, BankAccount, GuestBook, Note, Serial
 from utils.formatHelper import *
 
 
@@ -33,12 +33,16 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
     class Meta:
         model = BankAccount
         fields = "__all__"
 
 
 class GuestBookSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
     class Meta:
         model = GuestBook
         fields = "__all__"
@@ -46,6 +50,7 @@ class GuestBookSerializer(serializers.ModelSerializer):
 
 class NoteSerializer(serializers.ModelSerializer):
     date = serializers.SerializerMethodField()
+    user = serializers.ReadOnlyField(source="user.username")
 
     def get_date(self, obj):
         result = ""
@@ -60,6 +65,8 @@ class NoteSerializer(serializers.ModelSerializer):
 
 
 class SerialSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
     class Meta:
         model = Serial
         fields = "__all__"
