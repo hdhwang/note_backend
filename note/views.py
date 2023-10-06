@@ -367,9 +367,14 @@ class GuestBookAPI(viewsets.ModelViewSet):
             name = get_dic_value(request.data, "name")
             amount = to_int(get_dic_value(request.data, "amount", None))
             date = get_dic_value(request.data, "date", None)
-            area = get_dic_value(request.data, "area")
+            area = get_dic_value(request.data, "area", "")
             attend = get_dic_value(request.data, "attend", "-")
-            description = get_dic_value(request.data, "description")
+            description = get_dic_value(request.data, "description", "")
+
+            if amount is None:
+                request.data['amount'] = None
+            if date is None:
+                request.data['date'] = None
 
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -417,9 +422,14 @@ class GuestBookAPI(viewsets.ModelViewSet):
             name = get_dic_value(request.data, "name")
             amount = to_int(get_dic_value(request.data, "amount", None))
             date = get_dic_value(request.data, "date", None)
-            area = get_dic_value(request.data, "area")
+            area = get_dic_value(request.data, "area", "")
             attend = get_dic_value(request.data, "attend", "-")
-            description = get_dic_value(request.data, "description")
+            description = get_dic_value(request.data, "description", "")
+
+            if amount is None:
+                request.data['amount'] = None
+            if date is None:
+                request.data['date'] = None
 
             partial = kwargs.pop("partial", False)
             instance = self.get_object()
@@ -429,12 +439,13 @@ class GuestBookAPI(viewsets.ModelViewSet):
                 actions.append(f"[이름] {instance.name} → {name}")
 
             if instance.amount != amount:
-                # 감사 로그 > 내용 추가
-                actions.append(f"[금액] {instance.amount} → {amount}")
+                org_amount_str = instance.amount if instance.amount is not None else ""
+                amount_str = amount if amount is not None else ""
 
-            org_date_str = (
-                datetime_to_str(instance.date, "%Y-%m-%d") if instance.date else ""
-            )
+                # 감사 로그 > 내용 추가
+                actions.append(f"[금액] {org_amount_str} → {amount_str}")
+
+            org_date_str = datetime_to_str(instance.date, "%Y-%m-%d") if instance.date else ""
             date_str = date if date is not None else ""
             if org_date_str != date_str:
                 # 감사 로그 > 내용 추가
