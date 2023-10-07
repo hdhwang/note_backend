@@ -1,4 +1,4 @@
-from note import models
+from api import models
 from utils.formatHelper import *
 from utils.networkHelper import get_client_ip
 import logging
