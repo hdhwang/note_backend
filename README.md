@@ -19,7 +19,7 @@ $ pip3 install -r requirements.txt
 
 > 프로젝트 SuperUser 생성
 ```
-(venv)$ python3 manage.py creatsuperuser --settings=config.settings.development
+(venv)$ python3 manage.py createsuperuser --settings=config.settings.development
 ```
 
 > 개발 환경 실행 명령어
