@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_crontab',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -245,20 +244,8 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False
         },
-        'django_crontab': {
-            'handlers': ['logfile'],
-            'level': 'INFO',
-            'propagate': False
-        },
     },
 }
-
-CRONTAB_DJANGO_MANAGE_PATH = os.path.abspath(__file__+'/../../..') + '/manage.py'
-CRONTAB_COMMENT = 'note'
-
-CRONJOBS = [
-    ('0 0 * * *', 'django.core.management.call_command', ['clearsessions']),     # 매 일 0시 만료 세션 정리 수행
-]
 
 
 # Internationalization
