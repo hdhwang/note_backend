@@ -15,4 +15,5 @@ router.register("(?P<version>v([0-9])+)/serial", SerialAPI)
 urlpatterns = router.urls + [
     # 추가할 URL 패턴이 존재하는 경우 여기에 추가
     re_path("(?P<version>v([0-9])+)/lotto", LottoAPI.as_view({"get": "list"})),
+    re_path("(?P<version>v([0-9])+)/account/user", AccountUserAPI.as_view({"put": "update"})),
 ]
