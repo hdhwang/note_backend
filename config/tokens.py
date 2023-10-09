@@ -19,8 +19,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             result = True
 
             refresh = self.get_token(self.user)
-            data['refresh_exp'] = str(datetime.now() + refresh.lifetime)
-            data['access_exp'] = str(datetime.now() + refresh.access_token.lifetime)
+            data['refresh_exp'] = int((datetime.now() + refresh.lifetime).timestamp())
+            data['access_exp'] = int((datetime.now() + refresh.access_token.lifetime).timestamp())
 
             return data
         finally:
@@ -44,7 +44,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         data = super().validate(attrs)
 
         refresh = self.token_class(attrs["refresh"])
-        data['access_exp'] = str(datetime.now() + refresh.access_token.lifetime)
+        data['access_exp'] = int((datetime.now() + refresh.access_token.lifetime).timestamp())
 
         return data
 
