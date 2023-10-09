@@ -5,5 +5,4 @@ pid_file=$SCRIPT_PATH"/tmp/note.pid"
 
 source $SCRIPT_PATH/venv/bin/activate
 uwsgi --stop $pid_file
-$SCRIPT_PATH/venv/bin/python3 $SCRIPT_PATH/manage.py crontab remove
 deactivate
