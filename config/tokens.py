@@ -3,16 +3,28 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer, TokenVerifySerializer
 from rest_framework import exceptions, serializers
 from rest_framework_simplejwt.tokens import UntypedToken
+from utils.formatHelper import *
+from utils.logHelper import insert_audit_log
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        action = f"아이디 또는 비밀번호 불일치 (아이디 : {attrs.get('username')})"
+        user = None
+        result = False
+        try:
+            data = super().validate(attrs)
+            user = attrs.get('username')
+            action = "사용자 로그인"
+            result = True
 
-        refresh = self.get_token(self.user)
-        data['refresh_exp'] = str(datetime.now() + refresh.lifetime)
-        data['access_exp'] = str(datetime.now() + refresh.access_token.lifetime)
+            refresh = self.get_token(self.user)
+            data['refresh_exp'] = str(datetime.now() + refresh.lifetime)
+            data['access_exp'] = str(datetime.now() + refresh.access_token.lifetime)
 
-        return data
+            return data
+        finally:
+            insert_audit_log(user, self.context.get('request'), "계정", "로그인", action, result)
 
     def get_token(cls, user):
         token = super().get_token(user)
