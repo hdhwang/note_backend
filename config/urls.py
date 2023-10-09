@@ -6,7 +6,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenVerifyView
-from .tokens import CustomTokenObtainPairView, CustomTokenRefreshView
+from .tokens import CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView
 
 
 schema_view = get_schema_view(
@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('token', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh', CustomTokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify', TokenVerifyView.as_view(), name='token_verify'),
+    path('token/verify', CustomTokenVerifyView.as_view(), name='token_verify'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
