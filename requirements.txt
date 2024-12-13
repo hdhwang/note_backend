@@ -7,7 +7,7 @@ django-filter==24.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.8
-mysqlclient==2.1.1
+mysqlclient==2.2.6
 pycryptodome==3.21.0
 PyJWT==2.10.1
 requests==2.32.3
