@@ -110,6 +110,7 @@ ENV/
 env.bak/
 venv.bak/
 /.vscode
+/.idea
 
 # Spyder project settings
 .spyderproject
@@ -134,3 +135,4 @@ dmypy.json
 
 # Secret information files #
 KMS.json
+
