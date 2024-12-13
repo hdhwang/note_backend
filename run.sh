@@ -35,4 +35,6 @@ gunicorn config.wsgi:application --preload -D \
 --error-logfile=${ERROR_LOG_FILE} \
 --timeout ${TIMEOUT}
 
+echo "note_drf run successfully."
+
 deactivate
