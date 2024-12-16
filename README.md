@@ -8,23 +8,23 @@ $ pip3 install -r requirements.txt
 
 > Django 모델 -> 데이터베이스 마이그레이션
 ```
-(venv)$ python3 manage.py makemigrations --settings=config.settings.development
-(venv)$ python3 manage.py migrate --settings=config.settings.development
+$ python3 manage.py makemigrations --settings=config.settings.development
+$ python3 manage.py migrate --settings=config.settings.development
 ```
 
 >프로젝트 구성을 위한 필수 DB 데이터 로드
 ```
-(venv)$ python3 manage.py loaddata api/data_auth.json --settings=config.settings.development
+$ python3 manage.py loaddata api/data_auth.json --settings=config.settings.development
 ```
 
 > 프로젝트 SuperUser 생성
 ```
-(venv)$ python3 manage.py createsuperuser --settings=config.settings.development
+$ python3 manage.py createsuperuser --settings=config.settings.development
 ```
 
 > 개발 환경 실행 명령어
 ```
-(venv)$ python3 manage.py runserver --settings=config.settings.development
+$ python3 manage.py runserver --settings=config.settings.development
 ```
 
 
@@ -35,7 +35,7 @@ $ pip3 freeze > requirements.txt
 
 > 프로젝트 구성을 위한 필수 DB 데이터 백업 방법
 ```
-(venv)$ python3 manage.py dumpdata auth -o api/data_auth.json --settings=config.settings.development
+$ python3 manage.py dumpdata auth -o api/data_auth.json --settings=config.settings.development
 ```
 
 > 데이터베이스 테이블 -> Django 모델 마이그레이션 방법
@@ -43,5 +43,5 @@ $ pip3 freeze > requirements.txt
 - DB에서 테이블을 생성/수정/삭제한 경우 models_tmp.py로 생성 후 models.py에 필요한 class를 추가
 - Django Model에서 관리되기 위해서는 마이그레이션된 코드의 class Meta에서 managed = False 라인 삭제가 필요함
 ```
-(venv)$ python3 manage.py inspectdb > api/models_tmp.py --settings=config.settings.development
+$ python3 manage.py inspectdb > api/models_tmp.py --settings=config.settings.development
 ```

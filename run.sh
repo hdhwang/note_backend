@@ -25,7 +25,6 @@ if [ -e ${SOCKET_FILE} ]; then
     rm -f ${SOCKET_FILE}
 fi
 
-source $SCRIPT_PATH/venv/bin/activate
 gunicorn config.wsgi:application --preload -D \
 --bind unix:${SOCKET_FILE} \
 --workers=${WORKERS} \
@@ -36,5 +35,3 @@ gunicorn config.wsgi:application --preload -D \
 --timeout ${TIMEOUT}
 
 echo "note_drf run successfully."
-
-deactivate
