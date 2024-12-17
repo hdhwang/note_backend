@@ -134,5 +134,5 @@ dmypy.json
 .DS_Store*
 
 # Secret information files #
-KMS.json
+kms.json
 

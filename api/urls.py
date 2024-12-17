@@ -1,5 +1,6 @@
-from django.urls import path, re_path
+from django.urls import re_path
 from rest_framework import routers
+
 from .views import *
 
 # View 구성에 ModelViewSet 클래스를 활용하는 경우 router를 통해 urlpattern을 자동으로 등록이 가능

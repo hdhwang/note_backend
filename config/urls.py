@@ -1,13 +1,12 @@
-from django.urls import path, include, re_path
-from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from drf_yasg.views import get_schema_view
+from django.contrib import admin
+from django.urls import path, include, re_path
 from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from rest_framework_simplejwt.views import TokenVerifyView
-from .tokens import CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView
 
+from .tokens import CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView
 
 schema_view = get_schema_view(
     openapi.Info(
