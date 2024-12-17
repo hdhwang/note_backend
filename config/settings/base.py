@@ -10,11 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
-from utils.KMSHelper import get_kms_value
 
-import os
+from utils.kms_helper import get_kms_value
 
 # 파일에서 서버 정보 로드(SECRET_KEY, ALLOWED_HOSTS, DATABASES)
 SETTING_PRD_DIC = get_kms_value()
@@ -210,7 +210,7 @@ SWAGGER_SETTINGS = {
 LOGDIR = Path(os.getenv('LOGDIR')) if os.getenv('LOGDIR') else BASE_DIR / 'logs'
 LOGGING = {
     'version': 1,
-    'diable_existing_loggers': False,
+    'disable_existing_loggers': False,
     'formatters': {
         'default': {
             'format': '%(asctime)s [%(levelname)8s] %(message)s',
@@ -239,7 +239,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False
         },
-        'note': {
+        'api': {
             'handlers': ['logfile'],
             'level': 'INFO',
             'propagate': False

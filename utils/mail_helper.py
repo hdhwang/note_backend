@@ -1,8 +1,9 @@
+import logging
+import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import smtplib
-from utils.formatHelper import *
-import logging
+
+from utils.format_helper import *
 
 logger = logging.getLogger(__name__)
 
