@@ -1,7 +1,7 @@
 from django.urls import re_path
 from rest_framework import routers
 
-from .views import *
+from .views import AuditLogAPI, BankAccountAPI, GuestBookAPI, NoteAPI, SerialAPI, LottoAPI, AccountUserAPI
 
 # View 구성에 ModelViewSet 클래스를 활용하는 경우 router를 통해 urlpattern을 자동으로 등록이 가능
 router = routers.SimpleRouter(

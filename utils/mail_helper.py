@@ -3,7 +3,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from utils.format_helper import *
+from utils.format_helper import to_str
 
 logger = logging.getLogger(__name__)
 

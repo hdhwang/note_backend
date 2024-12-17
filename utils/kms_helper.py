@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from utils.format_helper import *
+from utils.format_helper import to_str
 
 logger = logging.getLogger(__name__)
 

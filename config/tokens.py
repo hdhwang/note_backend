@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from utils.format_helper import *
-from utils.log_hjelper import insert_audit_log
+from utils.log_helper import insert_audit_log
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

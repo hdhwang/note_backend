@@ -3,7 +3,7 @@ import logging
 import rest_framework
 from django.core.handlers import wsgi, asgi
 
-from utils.format_helper import *
+from utils.format_helper import to_str
 
 logger = logging.getLogger(__name__)
 
