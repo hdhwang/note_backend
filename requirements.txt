@@ -11,3 +11,4 @@ mysqlclient==2.2.6
 pycryptodome==3.21.0
 PyJWT==2.10.1
 requests==2.32.3
+python-dateutil==2.9.0

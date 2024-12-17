@@ -4,7 +4,7 @@ import logging
 from Crypto.Cipher import AES
 from django.conf import settings
 
-from utils.format_helper import *
+from utils.format_helper import to_str
 
 logger = logging.getLogger(__name__)
 

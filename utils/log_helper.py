@@ -1,7 +1,7 @@
 import logging
 
 from api import models
-from utils.format_helper import *
+from utils.format_helper import ip_to_int, to_str
 from utils.network_helper import get_client_ip
 
 logger = logging.getLogger(__name__)
