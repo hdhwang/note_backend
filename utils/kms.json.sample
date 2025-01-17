@@ -1,7 +1,0 @@
-{
-  "kms": {
-    "url": "Input your KMS URL",
-    "token": "Input Your Token Value",
-    "key": "Input Your key name"
-  }
-}
