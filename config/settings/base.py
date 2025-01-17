@@ -10,32 +10,35 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import environ
 import os
 from datetime import timedelta
 from pathlib import Path
 
-from utils.kms_helper import get_kms_value
-
-# 파일에서 서버 정보 로드(SECRET_KEY, ALLOWED_HOSTS, DATABASES)
-SETTING_PRD_DIC = get_kms_value()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# environ 초기화
+env = environ.Env(
+    DEBUG=(bool, False)  # DEBUG 값을 boolean으로 캐스팅
+)
+
+# .env 파일 로드
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SETTING_PRD_DIC['SECRET_KEY']
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = SETTING_PRD_DIC['ALLOWED_HOSTS']
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
-AES_KEY = SETTING_PRD_DIC['AES_KEY']
-AES_KEY_IV = SETTING_PRD_DIC['AES_KEY_IV']
+AES_KEY = env("AES_KEY")
+AES_KEY_IV = env("AES_KEY_IV")
 
 
 # Application definition
@@ -101,7 +104,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': SETTING_PRD_DIC['DATABASES']['default'],
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
+    }
 }
 
 

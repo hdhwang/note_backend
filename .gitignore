@@ -133,6 +133,4 @@ dmypy.json
 # OS generated files #
 .DS_Store*
 
-# Secret information files #
-kms.json
 
