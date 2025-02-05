@@ -280,7 +280,7 @@ STATIC_URL = 'static/'
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Django 프로젝트에서 사용하는 모든 정적 파일을 한 곳에 모아넣는 경로
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = '/var/www/html/'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
