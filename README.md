@@ -1,4 +1,4 @@
-# noteDRF
+# Note Backend
 Django 풀스택으로 개발된 기존 note 프로젝트를 FE / BE 분리 구현
 
 > 프로젝트 관련 패키지 설치
