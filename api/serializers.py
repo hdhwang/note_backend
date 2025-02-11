@@ -5,6 +5,13 @@ from utils.format_helper import int_to_ip, datetime_to_str
 from .models import AuditLog, BankAccount, GuestBook, Note, Serial
 
 
+class DashboardStatsSerializer(serializers.Serializer):
+    bank_account_count = serializers.IntegerField()
+    guest_book_count = serializers.IntegerField()
+    note_count = serializers.IntegerField()
+    serial_count = serializers.IntegerField()
+
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
@@ -80,3 +87,7 @@ class SerialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Serial
         fields = "__all__"
+
+class LottoSerializer(serializers.Serializer):
+    num = serializers.CharField()
+    value = serializers.CharField()
