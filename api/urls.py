@@ -1,12 +1,13 @@
 from django.urls import re_path
 from rest_framework import routers
 
-from .views import AuditLogAPI, BankAccountAPI, GuestBookAPI, NoteAPI, SerialAPI, LottoAPI, AccountUserAPI
+from .views import AuditLogAPI, BankAccountAPI, GuestBookAPI, NoteAPI, SerialAPI, LottoAPI, AccountUserAPI, DashboardStatsAPI
 
 # View 구성에 ModelViewSet 클래스를 활용하는 경우 router를 통해 urlpattern을 자동으로 등록이 가능
 router = routers.SimpleRouter(
     trailing_slash=False
 )  # trailing_slash=False -> URL 후행 슬래시 제거
+router.register("(?P<version>v([0-9])+)/dashboard/stats", DashboardStatsAPI, basename="dashboard-stats")
 router.register("(?P<version>v([0-9])+)/audit-log", AuditLogAPI)
 router.register("(?P<version>v([0-9])+)/bank-account", BankAccountAPI)
 router.register("(?P<version>v([0-9])+)/guest-book", GuestBookAPI)

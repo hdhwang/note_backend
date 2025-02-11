@@ -17,13 +17,29 @@ from utils.log_helper import insert_audit_log
 from utils.regex_helper import ip_cidr_regex
 from .models import ChoiceResult, choice_str_to_int, AuditLog, BankAccount, GuestBook, Note, Serial
 from .permissions import PermissionUser, PermissionSuperUser
-from .serializers import UserSerializer, AuditLogSerializer, BankAccountSerializer, GuestBookSerializer, NoteSerializer, SerialSerializer
+from .serializers import UserSerializer, AuditLogSerializer, BankAccountSerializer, GuestBookSerializer, NoteSerializer, SerialSerializer, DashboardStatsSerializer, LottoSerializer
 
 logger = logging.getLogger(__name__)
 
 
 class CustomURLPathVersioning(versioning.URLPathVersioning):
     allowed_versions = ["v1"]
+
+
+class DashboardStatsAPI(viewsets.ViewSet):
+    versioning_class = CustomURLPathVersioning
+    permission_classes = [PermissionUser]
+    serializer_class = DashboardStatsSerializer
+
+    def list(self, request):
+        data = {
+            "bank_account_count": BankAccount.objects.count(),
+            "guest_book_count": GuestBook.objects.count(),
+            "note_count": Note.objects.count(),
+            "serial_count": Serial.objects.count(),
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class AccountUserAPI(viewsets.ModelViewSet):
@@ -181,6 +197,11 @@ class BankAccountAPI(viewsets.ModelViewSet):
     category = "계좌번호 관리"
 
     def get_queryset(self):
+        # 인증되지 않은 사용자는 빈 쿼리셋 반환
+        if not self.request.user.is_authenticated:
+            return super().get_queryset().none()
+
+        # 인증된 사용자에 대해 필터링
         return super().get_queryset().filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
@@ -385,6 +406,11 @@ class GuestBookAPI(viewsets.ModelViewSet):
     category = "결혼식 방명록"
 
     def get_queryset(self):
+        # 인증되지 않은 사용자는 빈 쿼리셋 반환
+        if not self.request.user.is_authenticated:
+            return super().get_queryset().none()
+
+        # 인증된 사용자에 대해 필터링
         return super().get_queryset().filter(user=self.request.user)
 
     def perform_create(self, serializer):
@@ -610,6 +636,11 @@ class NoteAPI(viewsets.ModelViewSet):
     category = "노트 관리"
 
     def get_queryset(self):
+        # 인증되지 않은 사용자는 빈 쿼리셋 반환
+        if not self.request.user.is_authenticated:
+            return super().get_queryset().none()
+
+        # 인증된 사용자에 대해 필터링
         return super().get_queryset().filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
@@ -783,6 +814,11 @@ class SerialAPI(viewsets.ModelViewSet):
     category = "시리얼 번호 관리"
 
     def get_queryset(self):
+        # 인증되지 않은 사용자는 빈 쿼리셋 반환
+        if not self.request.user.is_authenticated:
+            return super().get_queryset().none()
+
+        # 인증된 사용자에 대해 필터링
         return super().get_queryset().filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
@@ -950,6 +986,7 @@ class LottoAPI(viewsets.ModelViewSet):
     versioning_class = CustomURLPathVersioning
     filter_backends = []
     pagination_class = None
+    serializer_class = LottoSerializer
     permission_classes = [PermissionUser]
 
     def list(self, request, *args, **kwargs):
