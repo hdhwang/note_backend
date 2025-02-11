@@ -1,7 +1,7 @@
 FROM python:3.13
 
 ENV PYTHONUNBUFFERED=1
-ENV PROJECT_ROOT="/data/app/note_drf"
+ENV PROJECT_ROOT="/data/app/note_backend"
 ENV LOG_DIR="${PROJECT_ROOT}/logs"
 
 # 작업 디렉토리 설정

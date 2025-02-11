@@ -1,13 +1,13 @@
 services:
-  note_drf:
+  note_backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: note_drf
+    container_name: note_backend
     ports:
       - "8080:443"
     volumes:
-      - .:/data/app/note_drf
+      - .:/data/app/note_backend
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
     restart: always
