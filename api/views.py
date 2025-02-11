@@ -31,7 +31,7 @@ class DashboardStatsAPI(viewsets.ViewSet):
     permission_classes = [PermissionUser]
     serializer_class = DashboardStatsSerializer
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         data = {
             "bank_account_count": BankAccount.objects.count(),
             "guest_book_count": GuestBook.objects.count(),

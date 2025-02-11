@@ -7,7 +7,7 @@ from .views import AuditLogAPI, BankAccountAPI, GuestBookAPI, NoteAPI, SerialAPI
 router = routers.SimpleRouter(
     trailing_slash=False
 )  # trailing_slash=False -> URL 후행 슬래시 제거
-router.register("(?P<version>v([0-9])+)/dashboard/stats", DashboardStatsAPI, basename="dashboard-stats")
+router.register("(?P<version>v([0-9])+)/dashboard/stats", DashboardStatsAPI, basename='dashboard-stats')
 router.register("(?P<version>v([0-9])+)/audit-log", AuditLogAPI)
 router.register("(?P<version>v([0-9])+)/bank-account", BankAccountAPI)
 router.register("(?P<version>v([0-9])+)/guest-book", GuestBookAPI)
