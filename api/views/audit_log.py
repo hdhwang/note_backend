@@ -7,7 +7,7 @@ from rest_framework import viewsets
 from utils.format_helper import to_int
 from utils.regex_helper import ip_cidr_regex
 from api.models import ChoiceResult, choice_str_to_int, AuditLog
-from api.permissions import PermissionSuperUser
+from api.permissions import PermissionAdmin
 from api.serializers import AuditLogSerializer
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class AuditLogFilter(filters.FilterSet):
 class AuditLogAPI(viewsets.ModelViewSet):
     serializer_class = AuditLogSerializer
     queryset = AuditLog.objects.all()
-    permission_classes = [PermissionSuperUser]
+    permission_classes = [PermissionAdmin]
 
     # 지원 HTTP 메소드 설정 (CRUD)
     http_method_names = ["get"]
