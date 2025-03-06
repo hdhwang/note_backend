@@ -14,6 +14,9 @@ from api.serializers import NoteSerializer
 
 logger = logging.getLogger(__name__)
 
+# 감사 로그 > 카테고리
+category = "노트 관리"
+
 
 class NoteFilter(filters.FilterSet):
     title = filters.CharFilter(lookup_expr="icontains")
@@ -43,9 +46,6 @@ class NoteAPI(viewsets.ModelViewSet):
 
     # 정렬 적용 필드
     ordering_fields = ["id", "title", "date"]
-
-    # 감사 로그 > 카테고리
-    category = "노트 관리"
 
     def get_queryset(self):
         # 인증되지 않은 사용자는 빈 쿼리셋 반환
@@ -108,7 +108,7 @@ class NoteAPI(viewsets.ModelViewSet):
             audit_log = f"""추가 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def update(self, request, *args, **kwargs):
@@ -158,7 +158,7 @@ class NoteAPI(viewsets.ModelViewSet):
             # 감사 로그 기록
             audit_log = f"""편집 ( {', '.join(actions)} )"""
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def destroy(self, request, *args, **kwargs):
@@ -187,5 +187,5 @@ class NoteAPI(viewsets.ModelViewSet):
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
