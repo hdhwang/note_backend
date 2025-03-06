@@ -171,13 +171,13 @@ class UsersAPI(viewsets.ModelViewSet):
 
             if name and user.first_name != name:
                 # 감사 로그 > 내용 추가
-                actions.append(f"[이름] {user.first_name} → {name}")
+                actions.append(f"[이름] : {user.first_name} → {name}")
 
                 user.first_name = name
 
             if email and user.email != email:
                 # 감사 로그 > 내용 추가
-                actions.append(f"[이메일] {user.email} → {email}")
+                actions.append(f"[이메일] : {user.email} → {email}")
 
                 user.email = email
 
@@ -186,7 +186,7 @@ class UsersAPI(viewsets.ModelViewSet):
                 user_status = '활성화' if is_active else '비활성화'
 
                 # 감사 로그 > 내용 추가
-                actions.append(f"[상태] {org_user_status} → {user_status}")
+                actions.append(f"[상태] : {org_user_status} → {user_status}")
 
                 user.is_active = is_active
 
