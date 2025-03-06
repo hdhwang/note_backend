@@ -132,7 +132,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
-        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
+        actions.append(f"""[아이디] : {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False
@@ -196,7 +196,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 감사 로그 > 내용
         actions = []
-        actions.append(f"""[아이디] {get_dic_value(kwargs, 'pk')}""")
+        actions.append(f"""[아이디] : {get_dic_value(kwargs, 'pk')}""")
 
         # 감사 로그 > 결과
         result = False

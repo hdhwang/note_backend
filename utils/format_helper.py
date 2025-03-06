@@ -109,3 +109,15 @@ def list_to_str(param):
 
     finally:
         return result
+
+def choice_str_to_int(choice_class, input_value):
+    for num, string in choice_class.choices:
+        if string.upper() == input_value.upper():
+            return num
+    return None
+
+def choice_int_to_str(choice_class, input_value):
+    for num, string in choice_class.choices:
+        if num == input_value:
+            return string
+    return ''
