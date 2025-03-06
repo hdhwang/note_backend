@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
 from utils.format_helper import int_to_ip, datetime_to_str
@@ -19,6 +19,45 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('password', 'new_password')
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    user_id = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    permission = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    last_login = serializers.SerializerMethodField()
+
+    def get_user_id(self, obj):
+        return obj.username
+
+    def get_name(self, obj):
+        return obj.first_name
+
+    def get_status(self, obj):
+        return '활성화' if obj.is_active else '비활성화'
+
+    def get_permission(self, obj):
+        return Group.objects.filter(user=obj).values_list('name', flat=True)
+
+    def get_created_at(self, obj):
+        result = ""
+        if obj.date_joined:
+            result = datetime_to_str(obj.date_joined, date_format="%Y-%m-%d %H:%M:%S")
+
+        return result
+
+    def get_last_login(self, obj):
+        result = ""
+        if obj.last_login:
+            result = datetime_to_str(obj.last_login, date_format="%Y-%m-%d %H:%M:%S")
+
+        return result
+
+    class Meta:
+        model = User
+        fields = ('id', 'user_id', 'name', 'email', 'status', 'permission', 'created_at', 'last_login')
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
@@ -87,6 +126,7 @@ class SerialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Serial
         fields = "__all__"
+
 
 class LottoSerializer(serializers.Serializer):
     num = serializers.CharField()
