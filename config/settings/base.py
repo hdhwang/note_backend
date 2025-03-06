@@ -135,7 +135,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     # 버저닝 클래스를 URLPathVersioning으로 설정
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    # 'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_VERSIONING_CLASS': 'config.versioning.CustomURLPathVersioning',
     # DRF 기본 렌더링을 json으로 설정 (json으로 설정하지 않으면 HTML로 렌더링되며, 파라미터 추가를 통해 json으로 응답을 받아야하므로 설정함)
     'DEFAULT_RENERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
