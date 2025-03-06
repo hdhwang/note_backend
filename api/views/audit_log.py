@@ -45,6 +45,20 @@ class AuditLogFilter(filters.FilterSet):
     start_date = filters.DateTimeFilter(field_name="date", lookup_expr="gte")
     end_date = filters.DateTimeFilter(field_name="date", lookup_expr="lte")
 
+    # 정렬 적용 필드 : (실제 필드, 파라미터 명)으로 기재
+    ordering = filters.OrderingFilter(
+        fields = (
+            ('id', 'id'),
+            ('user', 'user'),
+            ('ip', 'ip'),
+            ('category', 'category'),
+            ('sub_category', 'sub_category'),
+            ('action', 'action'),
+            ('result', 'result'),
+            ('date', 'date')
+        )
+    )
+
     class Meta:
         model = AuditLog
         fields = (
@@ -86,14 +100,14 @@ class AuditLogAPI(viewsets.ModelViewSet):
     #     'date': ['exact', 'gte', 'lte'],
     # }
 
-    # 정렬 적용 필드
-    ordering_fields = [
-        "id",
-        "user",
-        "ip",
-        "category",
-        "sub_category",
-        "action",
-        "result",
-        "date",
-    ]
+    # 정렬 적용 필드 ('DEFAULT_FILTER_BACKENDS' 설정을 통해 OrderingFilter를 사용하는 경우 필수)
+    # ordering_fields = (
+    #     "id",
+    #     "user",
+    #     "ip",
+    #     "category",
+    #     "sub_category",
+    #     "action",
+    #     "result",
+    #     "date",
+    # )

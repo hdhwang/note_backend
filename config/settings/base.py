@@ -148,7 +148,7 @@ REST_FRAMEWORK = {
     # 필터 설정
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
+        # 'rest_framework.filters.OrderingFilter',
     ],
     # Custom 페이징 클래스 설정
     'DEFAULT_PAGINATION_CLASS': 'config.paginations.CustomPagination',

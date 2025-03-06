@@ -28,6 +28,15 @@ class NoteFilter(filters.FilterSet):
     start_date = filters.DateFilter(field_name="date", lookup_expr="gte")
     end_date = filters.DateFilter(field_name="date", lookup_expr="lte")
 
+    # 정렬 적용 필드 : (실제 필드, 파라미터 명)으로 기재
+    ordering = filters.OrderingFilter(
+        fields=(
+            ("id", "id"),
+            ("title", "title"),
+            ("date", "date"),
+        )
+    )
+
     class Meta:
         model = Note
         fields = ("id", "title", "note", "start_date", "end_date")
@@ -43,9 +52,6 @@ class NoteAPI(viewsets.ModelViewSet):
 
     # 커스텀 필터 클래스 적용
     filterset_class = NoteFilter
-
-    # 정렬 적용 필드
-    ordering_fields = ["id", "title", "date"]
 
     def get_queryset(self):
         # 인증되지 않은 사용자는 빈 쿼리셋 반환
