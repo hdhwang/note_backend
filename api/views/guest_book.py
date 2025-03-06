@@ -13,6 +13,9 @@ from api.serializers import GuestBookSerializer
 
 logger = logging.getLogger(__name__)
 
+# 감사 로그 > 카테고리
+category = "결혼식 방명록"
+
 
 class GuestBookFilter(filters.FilterSet):
     name = filters.CharFilter(lookup_expr="icontains")
@@ -21,6 +24,19 @@ class GuestBookFilter(filters.FilterSet):
 
     start_date = filters.DateFilter(field_name="date", lookup_expr="gte")
     end_date = filters.DateFilter(field_name="date", lookup_expr="lte")
+
+    # 정렬 적용 필드 : (실제 필드, 파라미터 명)으로 기재
+    ordering = filters.OrderingFilter(
+        fields=(
+            ("id", "id"),
+            ("name", "name"),
+            ("amount", "amount"),
+            ("area", "area"),
+            ("attend", "attend"),
+            ("description", "description"),
+            ("date", "date"),
+        )
+    )
 
     class Meta:
         model = GuestBook
@@ -46,12 +62,6 @@ class GuestBookAPI(viewsets.ModelViewSet):
 
     # 커스텀 필터 클래스 적용
     filterset_class = GuestBookFilter
-
-    # 정렬 적용 필드
-    ordering_fields = ["id", "name", "amount", "area", "attend", "description"]
-
-    # 감사 로그 > 카테고리
-    category = "결혼식 방명록"
 
     def get_queryset(self):
         # 인증되지 않은 사용자는 빈 쿼리셋 반환
@@ -115,7 +125,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
             audit_log = f"""추가 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def update(self, request, *args, **kwargs):
@@ -195,7 +205,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
             # 감사 로그 기록
             audit_log = f"""편집 ( {', '.join(actions)} )"""
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def destroy(self, request, *args, **kwargs):
@@ -233,7 +243,7 @@ class GuestBookAPI(viewsets.ModelViewSet):
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def get_attend_str(self, data):

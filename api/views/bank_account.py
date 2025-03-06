@@ -14,6 +14,9 @@ from api.serializers import BankAccountSerializer
 
 logger = logging.getLogger(__name__)
 
+# 감사 로그 > 카테고리
+category = "계좌번호 관리"
+
 
 class BankAccountFilter(filters.FilterSet):
     bank = filters.CharFilter(lookup_expr="icontains")
@@ -26,6 +29,15 @@ class BankAccountFilter(filters.FilterSet):
 
     def enc_description_filter(self, queryset, name, value):
         return queryset.filter(description=make_enc_value(value))
+
+    # 정렬 적용 필드 : (실제 필드, 파라미터 명)으로 기재
+    ordering = filters.OrderingFilter(
+        fields=(
+            ("id", "id"),
+            ("bank", "bank"),
+            ("account_holder", "account_holder"),
+        )
+    )
 
     class Meta:
         model = BankAccount
@@ -42,12 +54,6 @@ class BankAccountAPI(viewsets.ModelViewSet):
 
     # 커스텀 필터 클래스 적용
     filterset_class = BankAccountFilter
-
-    # 정렬 적용 필드
-    ordering_fields = ["id", "bank", "account_holder"]
-
-    # 감사 로그 > 카테고리
-    category = "계좌번호 관리"
 
     def get_queryset(self):
         # 인증되지 않은 사용자는 빈 쿼리셋 반환
@@ -120,7 +126,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
             audit_log = f"""추가 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def update(self, request, *args, **kwargs):
@@ -184,7 +190,7 @@ class BankAccountAPI(viewsets.ModelViewSet):
             # 감사 로그 기록
             audit_log = f"""편집 ( {', '.join(actions)} )"""
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
 
     def destroy(self, request, *args, **kwargs):
@@ -214,5 +220,5 @@ class BankAccountAPI(viewsets.ModelViewSet):
             audit_log = f"""삭제 ( {', '.join(actions)} )"""
 
             insert_audit_log(
-                request.user.username, request, self.category, "-", audit_log, result
+                request.user.username, request, category, "-", audit_log, result
             )
