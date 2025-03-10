@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import User, Group
+from django.db import transaction
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -86,7 +87,7 @@ class UsersAPI(viewsets.ModelViewSet):
             name = request.data.get('name', '')
             email = request.data.get('email', '')
             user_status = request.data.get('user_status', '')
-            permission = request.data.get('permission', '')
+            permission_list = sorted(request.data.get('permission', '').split(','))
 
             if not user_id or not password or not name or not email or not user_status or not permission:
                 data = []
@@ -100,14 +101,14 @@ class UsersAPI(viewsets.ModelViewSet):
                     data.append({'email': [message.required_field]})
                 if not user_status:
                     data.append({'user_status': [message.required_field]})
-                if not permission:
+                if not permission_list:
                     data.append({'permission': [message.required_field]})
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
             if User.objects.filter(id=user_id).exists():
                 return Response({'user_id': [message.duplicated]}, status=status.HTTP_409_CONFLICT)
 
-            if permission not in ['사용자', '관리자']:
+            if not all(permission in ['사용자', '관리자'] for permission in permission_list):
                 return Response({'permission': [message.invalid_permission_field]}, status=status.HTTP_400_BAD_REQUEST)
 
             if not Group.objects.filter(name=permission).exists():
@@ -118,7 +119,9 @@ class UsersAPI(viewsets.ModelViewSet):
             user.is_staff = False
             user.is_superuser = False
             user.first_name = name
-            user.groups.add(Group.objects.get(name=permission))
+            for permission in permission_list:
+                group = Group.objects.get(name=permission)
+                user.groups.add(group)
             user.save()
             result = True
 
@@ -164,7 +167,10 @@ class UsersAPI(viewsets.ModelViewSet):
             name = request.data.get('name', '')
             email = request.data.get('email', '')
             is_active = True if request.data.get('is_active') == '활성화' else False
-            permission = request.data.get('permission', '')
+            permission_list = sorted(request.data.get('permission', '').split(','))
+
+            if not all(permission in ['사용자', '관리자'] for permission in permission_list):
+                return Response({'permission': [message.invalid_permission_field]}, status=status.HTTP_400_BAD_REQUEST)
 
             # 감사 로그 > 내용 추가
             actions.append(f'[사용자 아이디] : {user.username}')
@@ -174,6 +180,12 @@ class UsersAPI(viewsets.ModelViewSet):
                 actions.append(f"[이름] : {user.first_name} → {name}")
 
                 user.first_name = name
+
+            if password:
+                # 감사 로그 > 내용 추가
+                actions.append(f"[패스워드 변경]")
+
+                user.set_password(password)
 
             if email and user.email != email:
                 # 감사 로그 > 내용 추가
@@ -191,7 +203,16 @@ class UsersAPI(viewsets.ModelViewSet):
                 user.is_active = is_active
 
             # 권한 변경 추가 필요
-            # 비밀번호 변경 추가 필요
+            org_permission_list = sorted(list(Group.objects.filter(user__id=user.id).values_list('name', flat=True)))
+            if org_permission_list != permission_list:
+                # 감사 로그 > 내용 추가
+                actions.append(f"[권한] : {', '.join(org_permission_list)} → {', '.join(permission_list)}")
+
+                with transaction.atomic():
+                    user.groups.clear()
+                    for permission in permission_list:
+                        group = Group.objects.get(name=permission)
+                        user.groups.add(group)
 
             user.save()
             result = True
