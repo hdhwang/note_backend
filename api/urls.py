@@ -12,12 +12,14 @@ from api.views import (
 )
 from api.views.account import (
     user,
+    users,
 )
 
 # View 구성에 ModelViewSet 클래스를 활용하는 경우 router를 통해 urlpattern을 자동으로 등록이 가능
 router = routers.SimpleRouter(
     trailing_slash=False
 )  # trailing_slash=False -> URL 후행 슬래시 제거
+router.register("(?P<version>v([0-9])+)/account/users", users.UsersAPI)
 router.register("(?P<version>v([0-9])+)/dashboard/stats", dashboard.DashboardStatsAPI, basename='dashboard-stats')
 router.register("(?P<version>v([0-9])+)/audit-log", audit_log.AuditLogAPI)
 router.register("(?P<version>v([0-9])+)/bank-account", bank_account.BankAccountAPI)

@@ -14,6 +14,11 @@ class ChoiceResult(models.IntegerChoices):
     FAIL = 0, "실패"
 
 
+class ChoiceAccountStatus(models.IntegerChoices):
+    ACTIVE = 1, "활성화"
+    INACTIVE = 0, "비활성화"
+
+
 class AuditLog(models.Model):
     user = models.CharField(max_length=128, blank=True, null=True)
     ip = models.PositiveIntegerField(blank=True, null=True)
