@@ -1,8 +1,6 @@
 import logging
 import random
 
-import requests
-from bs4 import BeautifulSoup
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
@@ -20,60 +18,32 @@ class LottoAPI(viewsets.ModelViewSet):
     permission_classes = [PermissionUser]
 
     def list(self, request, *args, **kwargs):
-        data = self.gen_lotto_by_statistics()
+        data = self.gen_lotto()
         return Response(data, status=status.HTTP_200_OK)
 
-    def gen_lotto_by_statistics(self):
+    def gen_lotto(self):
         result = []
 
         try:
-            base_url = "https://dhlottery.co.kr/gameResult.do?method=statByNumber"
-            con = requests.get(base_url)
-            soup = BeautifulSoup(con.content, "html.parser")
-            stats_table = soup.find("table", {"class": "tbl_data tbl_data_col"})
-
-            stats_list = []
-            ball_list = []
-
-            for tr in stats_table.find_all("tr"):
-                ball_data = []
-                for td in tr.find_all("td"):
-                    data = td.get_text()
-                    if "\n\n" not in data:
-                        ball_data.append(int(data))
-
-                if ball_data:
-                    stats_list.append(ball_data)
-
-            for stats in stats_list:
-                number = stats[0]
-                count = stats[1]
-
-                for i in range(count):
-                    ball_list.append(number)
-
-            random.shuffle(ball_list)
-
             for i in range(5):
                 num_list = []
-                str_num_list = ""
-
+                ran_num = random.randint(1, 45)
                 for j in range(6):
-                    lotto = random.choice(ball_list)
-                    while lotto in num_list:
-                        lotto = random.choice(ball_list)
-                    num_list.append(lotto)
+                    while ran_num in num_list:
+                        ran_num = random.randint(1, 45)
+                    num_list.append(ran_num)
 
                 num_list.sort()
+                str_num_list = ''
 
-                for j in range(6):
-                    str_num = "%02d" % int(num_list[j])
-                    str_num_list += str_num if str_num_list == "" else f", {str_num}"
+                for k in range(6):
+                    str_num = '%02d' % num_list[k]
+                    str_num_list += str_num if str_num_list == '' else f' {str_num}'
 
                 result.append({"num": chr(i + 65), "value": str_num_list})
 
         except Exception as e:
-            logger.warning(f"[LottoAPI - gen_lotto_by_statistics] {to_str(e)}")
+            logger.warning(f"[LottoAPI - gen_lotto] {to_str(e)}")
             raise
 
         return result
