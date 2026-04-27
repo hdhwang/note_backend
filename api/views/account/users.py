@@ -106,7 +106,7 @@ class UsersAPI(viewsets.ModelViewSet):
                     data.append({'permission': [message.required_field]})
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-            if User.objects.filter(id=user_id).exists():
+            if User.objects.filter(username=user_id).exists():
                 return Response({'user_id': [message.duplicated]}, status=status.HTTP_409_CONFLICT)
 
             if not all(p in ['사용자', '관리자'] for p in permission_list):
