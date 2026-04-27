@@ -15,11 +15,12 @@ class DashboardStatsAPI(viewsets.ViewSet):
     serializer_class = DashboardStatsSerializer
 
     def list(self, request, *args, **kwargs):
+        user = request.user
         data = {
-            "bank_account_count": BankAccount.objects.count(),
-            "guest_book_count": GuestBook.objects.count(),
-            "note_count": Note.objects.count(),
-            "serial_count": Serial.objects.count(),
+            "bank_account_count": BankAccount.objects.filter(user=user).count(),
+            "guest_book_count": GuestBook.objects.filter(user=user).count(),
+            "note_count": Note.objects.filter(user=user).count(),
+            "serial_count": Serial.objects.filter(user=user).count(),
         }
 
         return Response(data, status=status.HTTP_200_OK)
