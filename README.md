@@ -4,12 +4,16 @@ Django REST Framework(DRF) 기반의 풀스택 `note` 프로젝트에서 백엔�
 
 ## 🚀 Tech Stack
 
-- **Framework**: Django 4.1, Django REST Framework
+- **Framework**: Django 6.0, Django REST Framework
+- **Excel Library**: openpyxl 3.1 (데이터 내보내기용)
 - **Database**: MySQL
+
 - **Authentication**: JWT (JSON Web Token) via `djangorestframework-simplejwt`
   - Access Token (30분), Refresh Token (7일)로 생명주기 최적화 적용
   - 토큰 갱신(Refresh) 시 사용자 편의성 및 보안을 위한 `last_login` 자동 갱신 기능 커스텀 구현
+- **CORS**: 프론트엔드에서 내보내기 파일명에 접근할 수 있도록 `Content-Disposition` 헤더 노출 설정 적용
 - **Security**: AES-256-CBC 기반 중요 데이터(계좌번호, 시리얼, 노트 내용 등) 양방향 암복호화
+
 - **Deployment**: Docker, Docker Compose, Nginx, Gunicorn
 
 ## 🎯 Key Features
@@ -17,6 +21,7 @@ Django REST Framework(DRF) 기반의 풀스택 `note` 프로젝트에서 백엔�
 - **사용자 관리 및 권한 (RBAC)**: 관리자(Admin)와 일반 사용자(User) 권한 분리
 - **보안 데이터 관리**: AES 암호화를 적용한 안전한 데이터 저장 (`BankAccount`, `Note`, `Serial` 등)
 - **데이터 표준화**: 모든 주요 엔티티에 일관된 데이터 생성 일자(`created_at`) 스키마 및 직렬화 포맷 적용
+- **데이터 내보내기 (Export)**: 주요 모듈(방명록, 계좌, 노트, 시리얼, 감사 로그)의 데이터를 필터/정렬 조건이 유지된 상태로 Excel(ZIP 압축) 파일로 추출 가능
 - **감사 로그 (Audit Log)**: 시스템 내 주요 데이터 생성/수정/삭제 이벤트 및 사용자 로그인/관리 활동 자동 기록
 - **API 기능**:
   - `Dashboard`: 로그인한 사용자 본인의 데이터 통계 제공 (데이터 격리 적용)
@@ -25,6 +30,8 @@ Django REST Framework(DRF) 기반의 풀스택 `note` 프로젝트에서 백엔�
   - `Note`: 암호화된 개인 노트 관리
   - `Serial`: 소프트웨어 시리얼 넘버 관리
   - `Lotto`: 로또 번호 자동 생성 유틸리티
+  - `Data Export`: 각 모듈별 필터링된 데이터를 엑셀로 생성 및 ZIP 압축하여 제공
+
 
 ---
 
@@ -38,7 +45,7 @@ $ pip3 install -r requirements.txt
 ### 2. 환경 변수 설정
 프로젝트 루트 디렉토리에 `.env` 파일을 생성하고 다음 값을 채웁니다.
 ```env
-SECRET_KEY=your_django_secret_key
+SECRET_KEY=your_django_secret_key # HMAC-SHA256 보안을 위해 32바이트 이상 권장 (미달 시 경고 발생)
 ALLOWED_HOSTS=localhost,127.0.0.1
 DB_NAME=your_db_name
 DB_USER=your_db_user

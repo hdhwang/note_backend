@@ -2,11 +2,15 @@ import logging
 
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
+
 
 from utils.dic_helper import get_dic_value
 from utils.format_helper import to_str, to_int, datetime_to_str
 from utils.log_helper import insert_audit_log
+from utils.export_helper import export_to_zip
+
 from api.models import GuestBook
 from api.permissions import PermissionUser
 from api.serializers import GuestBookSerializer
@@ -258,3 +262,31 @@ class GuestBookAPI(viewsets.ModelViewSet):
             result = "미정"
 
         return result
+
+    @action(detail=False, methods=['get'])
+    def export(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        field_mappings = {
+            'name': '이름',
+            'amount': '금액',
+            'date': '일자',
+            'area': '장소',
+            'attend': '참석 여부',
+            'description': '설명',
+            'created_at': '생성 일자',
+        }
+        
+        data_list = []
+        for obj in queryset:
+            data_list.append({
+                'name': obj.name,
+                'amount': obj.amount,
+                'date': obj.date,
+                'area': obj.area,
+                'attend': self.get_attend_str(obj.attend),
+                'description': obj.description,
+                'created_at': obj.created_at,
+            })
+            
+        return export_to_zip(data_list, field_mappings, "결혼식 방명록")

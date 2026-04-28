@@ -3,12 +3,17 @@ import logging
 
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 
 from utils.format_helper import to_int
 from utils.regex_helper import ip_cidr_regex
 from api.models import ChoiceResult, choice_str_to_int, AuditLog
 from api.permissions import PermissionAdmin
 from api.serializers import AuditLogSerializer
+from utils.export_helper import export_to_zip
+
 
 logger = logging.getLogger(__name__)
 
@@ -100,14 +105,32 @@ class AuditLogAPI(viewsets.ModelViewSet):
     #     'date': ['exact', 'gte', 'lte'],
     # }
 
-    # 정렬 적용 필드 ('DEFAULT_FILTER_BACKENDS' 설정을 통해 OrderingFilter를 사용하는 경우 필수)
-    # ordering_fields = (
-    #     "id",
-    #     "user",
-    #     "ip",
-    #     "category",
-    #     "sub_category",
-    #     "action",
-    #     "result",
-    #     "date",
     # )
+
+    @action(detail=False, methods=['get'])
+    def export(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        field_mappings = {
+            'user': '사용자',
+            'ip': 'IP 주소',
+            'category': '카테고리',
+            'sub_category': '세부 카테고리',
+            'action': '수행 작업',
+            'result': '결과',
+            'date': '일시',
+        }
+        
+        data_list = []
+        for obj in queryset:
+            data_list.append({
+                'user': obj.user,
+                'ip': str(ipaddress.IPv4Address(obj.ip)) if obj.ip else '',
+                'category': obj.category,
+                'sub_category': obj.sub_category,
+                'action': obj.action,
+                'result': obj.get_result_display(),
+                'date': obj.date,
+            })
+            
+        return export_to_zip(data_list, field_mappings, "감사 로그")

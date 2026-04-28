@@ -78,6 +78,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 #     'https://localhost:3000',
 # ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Disposition']
 
 ROOT_URLCONF = 'config.urls'
 
