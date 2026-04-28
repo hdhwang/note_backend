@@ -89,7 +89,14 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
     user = serializers.ReadOnlyField(source="user.username")
+
+    def get_created_at(self, obj):
+        result = ""
+        if obj.created_at:
+            result = datetime_to_str(obj.created_at)
+        return result
 
     class Meta:
         model = BankAccount
@@ -97,7 +104,14 @@ class BankAccountSerializer(serializers.ModelSerializer):
 
 
 class GuestBookSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
     user = serializers.ReadOnlyField(source="user.username")
+
+    def get_created_at(self, obj):
+        result = ""
+        if obj.created_at:
+            result = datetime_to_str(obj.created_at)
+        return result
 
     class Meta:
         model = GuestBook
@@ -105,14 +119,13 @@ class GuestBookSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    date = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
     user = serializers.ReadOnlyField(source="user.username")
 
-    def get_date(self, obj):
+    def get_created_at(self, obj):
         result = ""
-        if obj.date:
-            result = datetime_to_str(obj.date)
-
+        if obj.created_at:
+            result = datetime_to_str(obj.created_at)
         return result
 
     class Meta:
@@ -121,7 +134,14 @@ class NoteSerializer(serializers.ModelSerializer):
 
 
 class SerialSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
     user = serializers.ReadOnlyField(source="user.username")
+
+    def get_created_at(self, obj):
+        result = ""
+        if obj.created_at:
+            result = datetime_to_str(obj.created_at)
+        return result
 
     class Meta:
         model = Serial
