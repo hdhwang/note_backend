@@ -2,12 +2,16 @@ import logging
 
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
+
 
 from utils.aes_helper import make_enc_value, get_dec_value
 from utils.dic_helper import get_dic_value
 from utils.format_helper import to_str
 from utils.log_helper import insert_audit_log
+from utils.export_helper import export_to_zip
+
 from api.models import Serial
 from api.permissions import PermissionUser
 from api.serializers import SerialSerializer
@@ -221,3 +225,28 @@ class SerialAPI(viewsets.ModelViewSet):
             insert_audit_log(
                 request.user.username, request, category, "-", audit_log, result
             )
+
+    @action(detail=False, methods=['get'])
+    def export(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        field_mappings = {
+            'type': '유형',
+            'title': '제품 명',
+            'value': '시리얼 번호',
+            'description': '설명',
+            'created_at': '생성 일자',
+        }
+        
+        data_list = []
+        for obj in queryset:
+            data_list.append({
+                'type': obj.type,
+                'title': obj.title,
+                'value': get_dec_value(obj.value) if obj.value else '',
+                'description': get_dec_value(obj.description) if obj.description else '',
+                'created_at': obj.created_at,
+            })
+            
+        return export_to_zip(data_list, field_mappings, "시리얼 번호 관리")
+

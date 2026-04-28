@@ -2,12 +2,16 @@ import logging
 
 from django_filters import rest_framework as filters
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
+
 
 from utils.aes_helper import make_enc_value, get_dec_value
 from utils.dic_helper import get_dic_value
 from utils.format_helper import to_str
 from utils.log_helper import insert_audit_log
+from utils.export_helper import export_to_zip
+
 from api.models import BankAccount
 from api.permissions import PermissionUser
 from api.serializers import BankAccountSerializer
@@ -222,3 +226,28 @@ class BankAccountAPI(viewsets.ModelViewSet):
             insert_audit_log(
                 request.user.username, request, category, "-", audit_log, result
             )
+
+    @action(detail=False, methods=['get'])
+    def export(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        field_mappings = {
+            'bank': '은행',
+            'account': '계좌번호',
+            'account_holder': '예금주',
+            'description': '설명',
+            'created_at': '생성 일자',
+        }
+        
+        data_list = []
+        for obj in queryset:
+            data_list.append({
+                'bank': obj.bank,
+                'account': get_dec_value(obj.account) if obj.account else '',
+                'account_holder': obj.account_holder,
+                'description': get_dec_value(obj.description) if obj.description else '',
+                'created_at': obj.created_at,
+            })
+            
+        return export_to_zip(data_list, field_mappings, "계좌번호 관리")
+
