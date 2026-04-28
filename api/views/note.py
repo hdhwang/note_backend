@@ -25,15 +25,15 @@ class NoteFilter(filters.FilterSet):
     def enc_note_filter(self, queryset, name, value):
         return queryset.filter(note=make_enc_value(value))
 
-    start_date = filters.DateFilter(field_name="date", lookup_expr="gte")
-    end_date = filters.DateFilter(field_name="date", lookup_expr="lte")
+    start_date = filters.DateFilter(field_name="created_at", lookup_expr="gte")
+    end_date = filters.DateFilter(field_name="created_at", lookup_expr="lte")
 
     # 정렬 적용 필드 : (실제 필드, 파라미터 명)으로 기재
     ordering = filters.OrderingFilter(
         fields=(
             ("id", "id"),
             ("title", "title"),
-            ("date", "date"),
+            ("created_at", "created_at"),
         )
     )
 

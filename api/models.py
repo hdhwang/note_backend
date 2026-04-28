@@ -38,6 +38,7 @@ class BankAccount(models.Model):
     account = models.CharField(max_length=512)
     account_holder = models.CharField(max_length=256)
     description = models.CharField(max_length=1024, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -53,6 +54,7 @@ class GuestBook(models.Model):
     area = models.CharField(max_length=16, blank=True, null=True)
     attend = models.CharField(max_length=1)
     description = models.CharField(max_length=128, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -63,7 +65,7 @@ class GuestBook(models.Model):
 class Note(models.Model):
     title = models.CharField(max_length=512)
     note = models.TextField()
-    date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -76,6 +78,7 @@ class Serial(models.Model):
     title = models.CharField(max_length=512)
     value = models.CharField(max_length=512, blank=True, null=True)
     description = models.CharField(max_length=1024, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
