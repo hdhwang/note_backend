@@ -7,6 +7,8 @@ Django REST Framework(DRF) 기반의 풀스택 `note` 프로젝트에서 백엔�
 - **Framework**: Django 4.1, Django REST Framework
 - **Database**: MySQL
 - **Authentication**: JWT (JSON Web Token) via `djangorestframework-simplejwt`
+  - Access Token (30분), Refresh Token (7일)로 생명주기 최적화 적용
+  - 토큰 갱신(Refresh) 시 사용자 편의성 및 보안을 위한 `last_login` 자동 갱신 기능 커스텀 구현
 - **Security**: AES-256-CBC 기반 중요 데이터(계좌번호, 시리얼, 노트 내용 등) 양방향 암복호화
 - **Deployment**: Docker, Docker Compose, Nginx, Gunicorn
 
@@ -16,7 +18,7 @@ Django REST Framework(DRF) 기반의 풀스택 `note` 프로젝트에서 백엔�
 - **보안 데이터 관리**: AES 암호화를 적용한 안전한 데이터 저장 (`BankAccount`, `Note`, `Serial` 등)
 - **감사 로그 (Audit Log)**: 시스템 내 주요 데이터 생성/수정/삭제 이벤트 및 사용자 로그인/관리 활동 자동 기록
 - **API 기능**:
-  - `Dashboard`: 주요 데이터 통계 제공
+  - `Dashboard`: 로그인한 사용자 본인의 데이터 통계 제공 (데이터 격리 적용)
   - `BankAccount`: 암호화된 계좌번호 관리
   - `GuestBook`: 방명록 및 축의금 데이터 관리
   - `Note`: 암호화된 개인 노트 관리
