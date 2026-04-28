@@ -47,6 +47,20 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         refresh = self.token_class(attrs["refresh"])
         data['access_exp'] = int((datetime.now() + refresh.access_token.lifetime).timestamp())
 
+        # 토큰 갱신 시 마지막 로그인 시간 업데이트
+        try:
+            from django.contrib.auth.models import update_last_login
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user_id = refresh.payload.get('username')
+            if user_id:
+                user = User.objects.get(username=user_id)
+                update_last_login(None, user)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('api')
+            logger.error(f"Failed to update last_login on token refresh: {e}")
+
         return data
 
 
